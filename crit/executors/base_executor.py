@@ -1,4 +1,4 @@
-from __future__ import annotations
+from typing import Union
 import subprocess
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
@@ -7,7 +7,7 @@ from crit.sequences import Sequence
 
 @dataclass
 class BaseExecutor(metaclass=ABCMeta):
-    host: str = None
+    hosts: Union[str, list] = None
     sequence: Sequence = None
 
     @property
@@ -16,9 +16,20 @@ class BaseExecutor(metaclass=ABCMeta):
         pass
 
     def execute(self):
-        host = self.host if self.host else self.sequence.host
+        hosts = self.hosts or self.sequence.hosts
+        results = {}
 
+        if isinstance(hosts, str):
+            results[hosts] = self.run_command(hosts)
+        elif isinstance(hosts, list):
+            for host in hosts:
+                results[host] = self.run_command(host)
+
+        print(results)
+
+    def run_command(self, host):
         commands = []
+
         if host != 'localhost' and host != '127.0.0.1':
             commands = ["ssh", "%s" % host]
 
@@ -26,6 +37,4 @@ class BaseExecutor(metaclass=ABCMeta):
                                shell=False,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-        result = ssh.stdout.readlines()
-
-        print(result)
+        return ssh.stdout.readlines()

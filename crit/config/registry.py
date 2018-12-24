@@ -24,15 +24,17 @@ class Registry(object):
         if not self._instance:
             self._instance = self.__Registry(*args, **kwargs)
 
-        return self._instance
+        return super().__new__(self)
 
     def __getattr__(self, name):
         """
         Override getattr method so the getattr function will be ran on the private class
         """
 
-        return self._instance.registry[name]
+        if name in self._instance.registry:
+            return self._instance.registry[name]
 
-    def set_attribute(self, name, value, overwrite=True):
-        if overwrite or name not in self._instance.registry:
-            self._instance.registry[name] = value
+        return self.__getattribute__(name)
+
+    def __setattr__(self, name, value):
+        self._instance.registry[name] = value
