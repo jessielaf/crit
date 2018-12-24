@@ -1,0 +1,9 @@
+# All python things
+*.log
+*.pot
+__pycache__/
+
+# Pip
+/crit.egg-info
+/dist
+/build
