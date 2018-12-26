@@ -1,13 +1,14 @@
-from typing import Union
+from typing import Union, List
 import subprocess
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
+from crit.config import Host
 from crit.sequences import Sequence
 
 
 @dataclass
 class BaseExecutor(metaclass=ABCMeta):
-    hosts: Union[str, list] = None
+    hosts: Union[Host, List[Host]] = None
     sequence: Sequence = None
 
     @property
@@ -19,19 +20,19 @@ class BaseExecutor(metaclass=ABCMeta):
         hosts = self.hosts or self.sequence.hosts
         results = {}
 
-        if isinstance(hosts, str):
+        if isinstance(hosts, Host):
             results[hosts] = self.run_command(hosts)
-        elif isinstance(hosts, list):
+        elif isinstance(hosts, List):
             for host in hosts:
                 results[host] = self.run_command(host)
 
         print(results)
 
-    def run_command(self, host):
+    def run_command(self, host: Host):
         commands = []
 
-        if host != 'localhost' and host != '127.0.0.1':
-            commands = ["ssh", "%s" % host]
+        if host.url != 'localhost' and host.url != '127.0.0.1':
+            commands = ["ssh", "%s" % host.url]
 
         ssh = subprocess.Popen(commands + self.commands,
                                shell=False,
