@@ -33,7 +33,7 @@ def create_registry(hosts):
 
         for host in hosts.split(','):
             if hosts == 'localhost' or hosts == '127.0.0.1':
-                host_objects.append(Localhost)
+                host_objects.append(Localhost())
             else:
                 host_objects.append(general_config.get_host_by_name(host))
 

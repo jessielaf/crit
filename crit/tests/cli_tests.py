@@ -4,13 +4,15 @@ from crit.config import GeneralConfig, Localhost, Registry
 from crit.exceptions.host_not_found_exception import HostNotFoundException
 from crit.tests.helpers.config import hosts
 
+work_dir = os.path.dirname(os.path.abspath(__file__))
+
 
 def get_helper_directory():
     """
     Gets the directory of the test helpers
     """
 
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'helpers')
+    return os.path.join(work_dir, 'helpers')
 
 
 def get_config_file():
@@ -50,6 +52,7 @@ class AddConfigTests(unittest.TestCase):
         os.chdir(get_helper_directory())
         cli.add_config('config.py')
         self.assertEqual(hosts, GeneralConfig().get_all())
+        os.chdir(work_dir)
 
     def test_work_directory_config_wrong(self):
         """
@@ -59,6 +62,7 @@ class AddConfigTests(unittest.TestCase):
         os.chdir(os.path.dirname(get_helper_directory()))
         with self.assertRaises(FileNotFoundError):
             cli.add_config('config.py')
+        os.chdir(work_dir)
 
     def tearDown(self):
         GeneralConfig().reset_for_test()
@@ -79,7 +83,7 @@ class CreateRegistryTests(unittest.TestCase):
         """
 
         cli.create_registry('localhost')
-        self.assertEqual([Localhost], Registry().hosts)
+        self.assertEqual([Localhost()], Registry().hosts)
 
     def test_one_specific_host(self):
         """
