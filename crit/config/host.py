@@ -12,5 +12,7 @@ class Host:
         return self.url
 
 
+@dataclass(frozen=True, repr=False)
 class Localhost(Host):
-    url = 'localhost'
+    url: str = 'localhost'
+    ssh_user: str = ''
