@@ -1,4 +1,5 @@
-import unittest, os
+import unittest
+import os
 from crit.commands import cli
 from crit.config import GeneralConfig, Localhost, Registry
 from crit.exceptions.host_not_found_exception import HostNotFoundException
@@ -42,7 +43,8 @@ class AddConfigTests(unittest.TestCase):
         """
 
         with self.assertRaises(FileNotFoundError):
-            cli.add_config(os.path.join(get_helper_directory(), 'test/config.py'))
+            cli.add_config(os.path.join(
+                get_helper_directory(), 'test/config.py'))
 
     def test_work_directory_config(self):
         """
