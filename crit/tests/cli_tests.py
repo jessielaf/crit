@@ -117,5 +117,12 @@ class CreateRegistryTests(unittest.TestCase):
         Registry().reset_for_test()
 
 
+class SequenceFileTests(unittest.TestCase):
+    def test_wrong_file(self):
+        with self.assertRaises(FileNotFoundError):
+            cli.run_sequence(os.path.join(get_helper_directory(), 'test1.py'))
+
+
+
 if __name__ == '__main__':
     unittest.main()
