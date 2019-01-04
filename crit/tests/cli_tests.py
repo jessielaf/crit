@@ -1,9 +1,11 @@
 import unittest
 import os
 from crit.commands import cli
-from crit.config import GeneralConfig, Localhost, Registry
+from crit.config import Localhost, config
+from crit.exceptions import NoSequenceException
 from crit.exceptions.host_not_found_exception import HostNotFoundException
 from crit.tests.helpers.config import hosts
+
 
 work_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -35,7 +37,7 @@ class AddConfigTests(unittest.TestCase):
         """
 
         cli.add_config(get_config_file())
-        self.assertEqual(hosts, GeneralConfig().get_all())
+        self.assertEqual(hosts, config.all_hosts)
 
     def test_specified_config_wrong(self):
         """
@@ -53,7 +55,7 @@ class AddConfigTests(unittest.TestCase):
 
         os.chdir(get_helper_directory())
         cli.add_config('config.py')
-        self.assertEqual(hosts, GeneralConfig().get_all())
+        self.assertEqual(hosts, config.all_hosts)
         os.chdir(work_dir)
 
     def test_work_directory_config_wrong(self):
@@ -67,41 +69,41 @@ class AddConfigTests(unittest.TestCase):
         os.chdir(work_dir)
 
     def tearDown(self):
-        GeneralConfig().reset_for_test()
+        config.all_hosts = []
 
 
-class CreateRegistryTests(unittest.TestCase):
+class AddHostsTests(unittest.TestCase):
     def test_all_hosts(self):
         """
         If all is given it should be equal to all hosts
         """
 
-        cli.create_registry('all')
-        self.assertEqual(hosts, Registry().hosts)
+        cli.add_hosts('all')
+        self.assertEqual(hosts, config.hosts)
 
     def test_localhost(self):
         """
         If localhost is passed only localhost should be in the registry
         """
 
-        cli.create_registry('localhost')
-        self.assertEqual([Localhost()], Registry().hosts)
+        cli.add_hosts('localhost')
+        self.assertEqual([Localhost()], config.hosts)
 
     def test_one_specific_host(self):
         """
         Test if given a specific url
         """
 
-        cli.create_registry(hosts[0].url)
-        self.assertEqual([hosts[0]], Registry().hosts)
+        cli.add_hosts(hosts[0].url)
+        self.assertEqual([hosts[0]], config.hosts)
 
     def test_two_specific_host(self):
         """
         Test if given two specific urls
         """
 
-        cli.create_registry(hosts[0].url + ',' + hosts[1].url)
-        self.assertEqual([hosts[0], hosts[1]], Registry().hosts)
+        cli.add_hosts(hosts[0].url + ',' + hosts[1].url)
+        self.assertEqual([hosts[0], hosts[1]], config.hosts)
 
     def test_wrong_url(self):
         """
@@ -109,21 +111,38 @@ class CreateRegistryTests(unittest.TestCase):
         """
 
         with self.assertRaises(HostNotFoundException):
-            cli.create_registry('test')
+            cli.add_hosts('test')
 
     @classmethod
     def setUpClass(cls):
         cli.add_config(get_config_file())
 
     def tearDown(self):
-        Registry().reset_for_test()
+        config.hosts = []
 
 
 class SequenceFileTests(unittest.TestCase):
+    def test_sequence_run(self):
+        """
+        Test if the sequence runs correctly when everything is given properly
+        """
+
+        cli.run_sequence(os.path.join(get_helper_directory(), 'test.py'))
+
+    def test_no_sequence_variable(self):
+        """
+        Test if the right exception is thrown if the sequence file passed does not contain a sequence variable
+        """
+
+        with self.assertRaises(NoSequenceException):
+            cli.run_sequence(os.path.join(get_helper_directory(), 'config.py'))
+
     def test_wrong_file(self):
+        """
+        Test if file not found is thrown (Will change behaviour)
+        """
         with self.assertRaises(FileNotFoundError):
             cli.run_sequence(os.path.join(get_helper_directory(), 'test1.py'))
-
 
 
 if __name__ == '__main__':

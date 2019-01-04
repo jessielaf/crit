@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 
 
@@ -6,7 +7,7 @@ class Host:
     url: str
     ssh_user: str
     ssh_password: str = None
-    ssh_identity_file = '~/.ssh/id_rsa'
+    ssh_identity_file: str = '~/.ssh/id_rsa'
 
     def __repr__(self):
         return self.url
@@ -14,5 +15,5 @@ class Host:
 
 @dataclass(frozen=True, repr=False)
 class Localhost(Host):
-    url: str = 'localhost'
-    ssh_user: str = ''
+    url: str = '127.0.0.1'
+    ssh_user: str = os.getlogin()

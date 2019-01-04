@@ -1,8 +1,10 @@
+import os
 from typing import Union, List
-import subprocess
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from crit.config import Host
+import paramiko
+
+from crit.config import Host, config, Localhost
 from crit.sequences import Sequence
 
 
@@ -13,7 +15,7 @@ class BaseExecutor(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def commands(self) -> list:
+    def commands(self) -> str:
         pass
 
     def execute(self):
@@ -29,13 +31,22 @@ class BaseExecutor(metaclass=ABCMeta):
         print(results)
 
     def run_command(self, host: Host):
-        commands = []
+        stdin, stdout, stderr = self.get_client(host).exec_command(self.commands)
 
-        if host.url != 'localhost' and host.url != '127.0.0.1':
-            commands = ["ssh", "%s" % host.url]
+        return stdout.read().decode().split('\n')
 
-        ssh = subprocess.Popen(commands + self.commands,
-                               shell=False,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-        return ssh.stdout.readlines()
+    @staticmethod
+    def get_client(host: Host):
+        if host.url in config.channels:
+            return config.channels[host.url]
+        else:
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.load_system_host_keys()
+            client.connect(hostname=host.url, username=host.ssh_user, password=host.ssh_password,
+                           pkey=paramiko.RSAKey.from_private_key_file(os.path.expanduser(host.ssh_identity_file)),
+                           allow_agent=False, look_for_keys=False)
+
+            config.channels[host.url] = client
+
+            return client
