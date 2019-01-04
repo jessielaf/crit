@@ -1,6 +1,4 @@
 import os
-import sys
-from importlib import import_module
 import click
 from importlib.machinery import SourceFileLoader
 from crit.exceptions import ConfigHasNoHostsException, NoSequenceException
@@ -13,18 +11,9 @@ from crit.utils import get_host_by_name
 @click.option('-h', '--hosts', default='all')
 @click.option('-c', '--config', default='config.py')
 def main(sequence_file, hosts, config):
-    add_modules()
     add_config(config)
     add_hosts(hosts)
     run_sequence(sequence_file)
-
-
-def add_modules():
-    """
-    This method adds all the directories in work directory to the python path so it can be used as modules
-    """
-
-    [sys.path.append(os.path.join(os.getcwd(), x)) for x in os.listdir(os.getcwd())]
 
 
 def add_config(config):

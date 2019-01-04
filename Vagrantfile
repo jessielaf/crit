@@ -32,6 +32,8 @@ Vagrant.configure("2") do |config|
       s.inline = <<-SHELL
         sudo apt-get install -y python3-setuptools
         cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+        echo "alias example=\"cd /vagrant && sudo python3 setup.py install && cd example/ && echo Results: && crit test.py -c config.py && cd /vagrant/\"" >> ~/.bashrc
+        source ~/.bashrc
       SHELL
     end
 
