@@ -2,9 +2,8 @@ import unittest
 import os
 from crit.commands import cli
 from crit.config import Localhost, config
-from crit.exceptions import NoSequenceException
-from crit.exceptions.host_not_found_exception import HostNotFoundException
-from crit.tests.helpers.config import hosts
+from crit.exceptions import NoSequenceException, HostNotFoundException
+from tests.helpers.config import hosts
 
 
 work_dir = os.path.dirname(os.path.abspath(__file__))

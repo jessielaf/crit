@@ -137,7 +137,7 @@ class BaseExecutor(metaclass=ABCMeta):
         output = self.output
         if status:
             color = 'green'
-            status_text = 'OK'
+            status_text = 'SUCCESS'
         else:
             output = True
             color = 'red'

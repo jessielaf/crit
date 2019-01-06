@@ -34,5 +34,5 @@ class Localhost(Host):
     Premade configuration for localhost
     """
 
-    url: str = '127.0.0.1'
+    url: str = 'localhost'
     ssh_user: str = os.getlogin()
