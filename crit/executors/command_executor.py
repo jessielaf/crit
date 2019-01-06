@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from crit.executors import BaseExecutor
 
 
-@dataclass()
+@dataclass
 class CommandExecutor(BaseExecutor):
     """
     An executor for a single command

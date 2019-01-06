@@ -67,10 +67,10 @@ Now you can run crit by using the crit command `crit sequence.py`
 
 The **first parameter** is the path to the **sequence script** but crit also has some other parameters:
 
-| Short | Long     | Default   | Description                              |
-|-------|----------|-----------|------------------------------------------|
-| -h    | --hosts  | all       | The hosts on which the sequence will run |
-| -c    | --config | config.py | The path config file of crit             |
+| Short | Long       | Default   | Description                              |
+|-------|------------|-----------|------------------------------------------|
+| `-h`  | `--hosts`  | all       | The hosts on which the sequence will run |
+| `-c`  | `--config` | config.py | The path config file of crit             |
 
 ## Executors
 
@@ -82,11 +82,11 @@ An executor is a class that contains a command that will run on the server. Your
 
 Crit comes with some default executors
 
-| Name             | Description                                                  | Doc url |
-|------------------|--------------------------------------------------------------|---------|
-| BaseExecutor     | The base executor where all the other executors are build on |         |
-| CommandExecutor  | Executes a command on a server                               |         |
-| TemplateExecutor | Creates a file on the host based on a template               |         |
+| Name               | Description                                                  | Doc url |
+|--------------------|--------------------------------------------------------------|---------|
+| `BaseExecutor`     | The base executor where all the other executors are build on |         |
+| `CommandExecutor`  | Executes a command on a server                               |         |
+| `TemplateExecutor` | Creates a file on the host based on a template               |         |
 
 > All executors can be found in the namespace `crit.executors`
 
@@ -101,20 +101,22 @@ CommandExecutor(command='ls -a')
 As you can see this is very limited. This is why you can extend the BaseExecutor to create a totally customizable executor. This is an example how the CommandExecutor is written:
 
 ```python3
+from dataclasses import dataclass
 from crit.executors import BaseExecutor
 
 
+@dataclass
 class CommandExecutor(BaseExecutor):
-      command: str
+    command: str = None
+    output: bool = True
 
-      def __init__(self, command: str, *args, **kwargs):
-        self.command = command
-        super().__init__(*args, **kwargs)
-
-      @property
-      def commands(self) -> str:
+    @property
+    def commands(self) -> str:
         return self.command
+
 ```
+
+> All the attributes of a custom executor that is also a @dataclass need to have a default value
 
 ## Registry
 
@@ -122,7 +124,7 @@ As mentioned above the config of crit is loaded from a python file. But that is 
 
 Crit supplies a config module that has one especially interesting attribute. This is the **registry** attribute. This attribute is a dict that contains variables that can be used for conditionals in your executor!
 
-You can import the confif via `from crit.config import config`
+You can import the config via `from crit.config import config`
 
 ## Status
 
