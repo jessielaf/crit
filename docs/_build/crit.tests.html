@@ -1,0 +1,237 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>crit.tests package &#8212; Crit  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="crit.tests.helpers package" href="crit.tests.helpers.html" />
+    <link rel="prev" title="crit.sequences package" href="crit.sequences.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="crit-tests-package">
+<h1>crit.tests package<a class="headerlink" href="#crit-tests-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="crit.tests.helpers.html">crit.tests.helpers package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="crit.tests.helpers.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="crit.tests.helpers.html#module-crit.tests.helpers.config">crit.tests.helpers.config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="crit.tests.helpers.html#module-crit.tests.helpers.test">crit.tests.helpers.test module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="crit.tests.helpers.html#module-crit.tests.helpers">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-crit.tests.cli_tests">
+<span id="crit-tests-cli-tests-module"></span><h2>crit.tests.cli_tests module<a class="headerlink" href="#module-crit.tests.cli_tests" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="crit.tests.cli_tests.AddConfigTests">
+<em class="property">class </em><code class="descclassname">crit.tests.cli_tests.</code><code class="descname">AddConfigTests</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddConfigTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<p>Tests for the cli function add_config</p>
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddConfigTests.tearDown">
+<code class="descname">tearDown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddConfigTests.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddConfigTests.test_specified_config">
+<code class="descname">test_specified_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddConfigTests.test_specified_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>If specific config file is given</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddConfigTests.test_specified_config_wrong">
+<code class="descname">test_specified_config_wrong</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddConfigTests.test_specified_config_wrong" title="Permalink to this definition">¶</a></dt>
+<dd><p>Right now tests if it throws a file not found error. Will improve this functionality later</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddConfigTests.test_work_directory_config">
+<code class="descname">test_work_directory_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddConfigTests.test_work_directory_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>If default is taken</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddConfigTests.test_work_directory_config_wrong">
+<code class="descname">test_work_directory_config_wrong</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddConfigTests.test_work_directory_config_wrong" title="Permalink to this definition">¶</a></dt>
+<dd><p>Right now tests if it throws a file not found error. Will improve this functionality later</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="crit.tests.cli_tests.AddHostsTests">
+<em class="property">class </em><code class="descclassname">crit.tests.cli_tests.</code><code class="descname">AddHostsTests</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddHostsTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="classmethod">
+<dt id="crit.tests.cli_tests.AddHostsTests.setUpClass">
+<em class="property">classmethod </em><code class="descname">setUpClass</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddHostsTests.setUpClass" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddHostsTests.tearDown">
+<code class="descname">tearDown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddHostsTests.tearDown" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddHostsTests.test_all_hosts">
+<code class="descname">test_all_hosts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddHostsTests.test_all_hosts" title="Permalink to this definition">¶</a></dt>
+<dd><p>If all is given it should be equal to all hosts</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddHostsTests.test_localhost">
+<code class="descname">test_localhost</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddHostsTests.test_localhost" title="Permalink to this definition">¶</a></dt>
+<dd><p>If localhost is passed only localhost should be in the registry</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddHostsTests.test_one_specific_host">
+<code class="descname">test_one_specific_host</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddHostsTests.test_one_specific_host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if given a specific url</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddHostsTests.test_two_specific_host">
+<code class="descname">test_two_specific_host</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddHostsTests.test_two_specific_host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if given two specific urls</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.AddHostsTests.test_wrong_url">
+<code class="descname">test_wrong_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.AddHostsTests.test_wrong_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if wrong url is given</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="crit.tests.cli_tests.SequenceFileTests">
+<em class="property">class </em><code class="descclassname">crit.tests.cli_tests.</code><code class="descname">SequenceFileTests</code><span class="sig-paren">(</span><em>methodName='runTest'</em><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.SequenceFileTests" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">unittest.case.TestCase</span></code></p>
+<dl class="method">
+<dt id="crit.tests.cli_tests.SequenceFileTests.test_no_sequence_variable">
+<code class="descname">test_no_sequence_variable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.SequenceFileTests.test_no_sequence_variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if the right exception is thrown if the sequence file passed does not contain a sequence variable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.SequenceFileTests.test_sequence_run">
+<code class="descname">test_sequence_run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.SequenceFileTests.test_sequence_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if the sequence runs correctly when everything is given properly</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="crit.tests.cli_tests.SequenceFileTests.test_wrong_file">
+<code class="descname">test_wrong_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.SequenceFileTests.test_wrong_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test if file not found is thrown (Will change behaviour)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="crit.tests.cli_tests.get_config_file">
+<code class="descclassname">crit.tests.cli_tests.</code><code class="descname">get_config_file</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.get_config_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the config file for the tests</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="crit.tests.cli_tests.get_helper_directory">
+<code class="descclassname">crit.tests.cli_tests.</code><code class="descname">get_helper_directory</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crit.tests.cli_tests.get_helper_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the directory of the test helpers</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-crit.tests">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-crit.tests" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="crit.html">crit package</a><ul>
+      <li>Previous: <a href="crit.sequences.html" title="previous chapter">crit.sequences package</a></li>
+      <li>Next: <a href="crit.tests.helpers.html" title="next chapter">crit.tests.helpers package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Jessie Liauw A Fong.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/crit.tests.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
