@@ -1,5 +1,8 @@
 import unittest
 import os
+from unittest import mock
+from unittest.mock import Mock
+
 from crit.commands import cli
 from crit.config import Localhost, config
 from crit.exceptions import NoSequenceException, HostNotFoundException
@@ -121,12 +124,17 @@ class AddHostsTests(unittest.TestCase):
 
 
 class SequenceFileTests(unittest.TestCase):
-    def test_sequence_run(self):
+    @mock.patch('crit.executors.CommandExecutor')
+    def test_sequence_run(self, executor_mock):
         """
         Test if the sequence runs correctly when everything is given properly
         """
 
+        execute_function = Mock()
+        executor_mock.return_value.execute = execute_function
+
         cli.run_sequence(os.path.join(get_helper_directory(), 'test.py'))
+        execute_function.assert_called_with()
 
     def test_no_sequence_variable(self):
         """

@@ -1,7 +1,5 @@
 import os
-
 from jinja2 import Template
-
 from crit.config import config
 from crit.executors import BaseExecutor
 

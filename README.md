@@ -67,7 +67,10 @@ Now you can run crit by using the crit command `crit sequence.py`
 
 The **first parameter** is the path to the **sequence script** but crit also has some other parameters:
 
-**todo** : Make table for parameters
+| Short | Long     | Default   | Description                              |
+|-------|----------|-----------|------------------------------------------|
+| -h    | --hosts  | all       | The hosts on which the sequence will run |
+| -c    | --config | config.py | The path config file of crit             |
 
 ## Executors
 
@@ -79,7 +82,11 @@ An executor is a class that contains a command that will run on the server. Your
 
 Crit comes with some default executors
 
-**todo** : create table of current executors
+| Name             | Description                                                  | Doc url |
+|------------------|--------------------------------------------------------------|---------|
+| BaseExecutor     | The base executor where all the other executors are build on |         |
+| CommandExecutor  | Executes a command on a server                               |         |
+| TemplateExecutor | Creates a file on the host based on a template               |         |
 
 > All executors can be found in the namespace `crit.executors`
 
@@ -120,6 +127,10 @@ You can import the confif via `from crit.config import config`
 ## Status
 
 Planning
+
+## Tests
+
+Right now we test the cli and the base executor because that is where most of the logic is a.t.m. You can run the tests by running `python3 -m unittest`
 
 ## Deployment
 
