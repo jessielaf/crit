@@ -7,3 +7,10 @@ __pycache__/
 /crit.egg-info
 /dist
 /build
+
+# Docs
+/docs/*.rst
+/docs/_build
+!/docs/_build/.gitkeep
+/docs/_static
+!/docs/_static/.gitkeep
