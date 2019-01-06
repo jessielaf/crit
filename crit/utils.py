@@ -6,10 +6,11 @@ def get_host_by_name(url: str) -> Host:
     """
     Gets the hosts by name from the config
 
-    :param url: The url pas
-    :type url: str
-    :return: host with the same url as passed as parameter
-    :rtype: Host
+    Args:
+        url (str): The url that matches with the host
+
+    Returns:
+        Host: host that matches with the url
     """
 
     host = [host for host in config.all_hosts if host.url == url]

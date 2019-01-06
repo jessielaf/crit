@@ -1,12 +1,17 @@
+from dataclasses import dataclass
 from crit.executors import BaseExecutor
 
 
+@dataclass()
 class CommandExecutor(BaseExecutor):
-    command: str
+    """
+    An executor for a single command
 
-    def __init__(self, command: str, *args, **kwargs):
-        self.command = command
-        super().__init__(*args, **kwargs)
+    Args:
+        command (str): The command to be executed
+    """
+    command: str = None
+    output: bool = True
 
     @property
     def commands(self) -> str:

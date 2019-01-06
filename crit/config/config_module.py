@@ -4,10 +4,20 @@ from crit.config import Host
 
 
 class _Config(object):
+    """
+    The config of the current run
+
+    Attributes:
+        hosts (List[Host]): The hosts that are used in the current run
+        all_hosts (List[Host]): All the hosts found in the config file
+        channels (Dict[str, SSHClient]): The paramiko channels that are matched with the url
+        registry (list): The registry of conditional variables in the run
+    """
+
     hosts: List[Host] = []
     all_hosts: List[Host] = []
     channels: Dict[str, SSHClient] = {}
-    run: list = {}
+    registry: list = {}
 
     def __getattr__(self, name):
         """

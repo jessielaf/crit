@@ -1,42 +1,99 @@
 import os
-from typing import Union, List
+import shutil
+from typing import Union, List, Tuple
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 import paramiko
-
-from crit.config import Host, config, Localhost
+from tabulate import tabulate
+from termcolor import colored
+from crit.config import Host, config
 from crit.sequences import Sequence
 
 
 @dataclass
 class BaseExecutor(metaclass=ABCMeta):
+    """
+    The base executor contains the logic for executing a command
+
+    Args:
+        hosts (Union[Host, List[Host]]): The hosts where the BaseExecutor executes the command on
+        name (str): The name that will be shown as title
+        output (str): Output the stdout from the executor
+
+    Attributes:
+        sequence (Sequence): The sequence that runs the executor
+        headers (List[str]): The headers for the output for the cli
+    """
+
     hosts: Union[Host, List[Host]] = None
+    name: str = None
+    output: bool = False
     sequence: Sequence = None
+    headers = [
+        'Host',
+        'Status',
+        'Output'
+    ]
 
     @property
     @abstractmethod
     def commands(self) -> str:
+        """
+        The commands that will be executed
+
+        Returns:
+            str: The commands to run on the server
+        """
         pass
 
     def execute(self):
+        """
+        Execute the commands and prints the table with the output of the executor
+        """
+
+        self.print_title()
+
         hosts = self.hosts or self.sequence.hosts
-        results = {}
+        results = []
 
         if isinstance(hosts, Host):
-            results[hosts] = self.run_command(hosts)
+            results.append(self.run_command(hosts))
         elif isinstance(hosts, List):
             for host in hosts:
-                results[host] = self.run_command(host)
+                results.append(self.run_command(host))
 
-        print(results)
+        print(tabulate(results, self.headers, tablefmt="github"), '\n')
 
-    def run_command(self, host: Host):
+    def run_command(self, host: Host) -> Tuple[Host, str, bool]:
+        """
+        Runs a command on a specific host
+
+        Args:
+            host (Host): The host where to run the command on
+
+        Returns:
+             Tuple[Host, str, bool]: The stdout from the command in the table format
+        """
+
         stdin, stdout, stderr = self.get_client(host).exec_command(self.commands)
 
-        return stdout.read().decode().split('\n')
+        error = stderr.read().decode().split('\n')
+        if error != ['']:
+            return self.output_to_table(host, error, False)
+
+        return self.output_to_table(host, stdout.read().decode().split('\n'), True)
 
     @staticmethod
-    def get_client(host: Host):
+    def get_client(host: Host) -> paramiko.SSHClient:
+        """
+        Get paramiko client for the host
+
+        Args:
+            host: The host for which the client should be returned
+
+        Returns:
+            paramiko.SSHClient: Client which can run the commands
+        """
         if host.url in config.channels:
             return config.channels[host.url]
         else:
@@ -50,3 +107,40 @@ class BaseExecutor(metaclass=ABCMeta):
             config.channels[host.url] = client
 
             return client
+
+    def print_title(self):
+        """
+        Prints the title of the executor in the commandline
+        """
+        width = shutil.get_terminal_size((80, 20)).columns - 1
+
+        line = '#' * width
+
+        print('\n')
+        print(line)
+        print(colored(self.name or self.__class__.__name__, attrs=['bold']))
+        print(line)
+
+    def output_to_table(self, host: Host, output_text: str, status: bool) -> Tuple[Host, str, bool]:
+        """
+        Transforms the output to a tuple that tabulate can handle
+
+        Args:
+            host (Host): The host on which the command is ran with
+            output_text (str): The output of the str
+            status:
+
+        Returns:
+             Tuple[Host, str, bool]: The stdout from the command in the table format
+        """
+
+        output = self.output
+        if status:
+            color = 'green'
+            status_text = 'OK'
+        else:
+            output = True
+            color = 'red'
+            status_text = 'FAIL'
+
+        return colored(host, color), colored(status_text, color), (colored(output_text, color) if output else '')
