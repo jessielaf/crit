@@ -1,8 +1,13 @@
 # Always prefer setuptools over distutils
-from m2r import parse_from_file
 from setuptools import setup, find_packages
 from codecs import open  # To use a consistent encoding
 from os import path
+
+try:
+    from m2r import parse_from_file
+    long_description = parse_from_file('README.md')
+except ImportError as e:
+    long_description = ''
 
 here = path.abspath(path.dirname(__file__))
 
@@ -21,7 +26,7 @@ setup(
     version='0.0.0',
 
     description='Crit: infrastructure as actual code',
-    long_description=parse_from_file('README.md'),
+    long_description=long_description,
 
     # The project's main homepage.
     url='https://github.com/jessielaf/crit',
