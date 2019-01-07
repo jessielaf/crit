@@ -10,7 +10,7 @@ __pycache__/
 
 # Docs
 /docs/*.rst
-/docs/_build
 !/docs/_build/.gitkeep
-/docs/_static
+/docs/_build
 !/docs/_static/.gitkeep
+/docs/_static

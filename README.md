@@ -134,6 +134,17 @@ Planning
 
 Right now we test the cli and the base executor because that is where most of the logic is a.t.m. You can run the tests by running `python3 -m unittest`
 
+### Docs
+
+The url to the docs are:
+
+To build the docs go to the `docs` directory:
+```
+sphinx-apidoc -o . ../crit -f
+mv modules.rst index.rst
+sphinx-build -b html . _build
+```
+
 ## Deployment
 
 Ask [Jessie Liauw A Fong](https://github.com/jessielaf) to for deployment
