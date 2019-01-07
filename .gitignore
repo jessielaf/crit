@@ -9,7 +9,6 @@ __pycache__/
 /build
 
 # Docs
-/docs/*.rst
 !/docs/_build/.gitkeep
 /docs/_build
 !/docs/_static/.gitkeep
