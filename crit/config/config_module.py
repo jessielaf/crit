@@ -3,7 +3,7 @@ from paramiko import SSHClient
 from crit.config import Host
 
 
-class _Config(object):
+class Config(object):
     """
     The config of the current run
 
@@ -36,4 +36,4 @@ class _Config(object):
             self.run[name] = value
 
 
-config = _Config()
+config = Config()

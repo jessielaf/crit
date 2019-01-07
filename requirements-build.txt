@@ -1,2 +1,4 @@
 m2r
 recommonmark
+sphinx_rtd_theme
+sphinx-markdown-tables

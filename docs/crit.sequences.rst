@@ -1,22 +1,16 @@
-crit\.sequences package
-=======================
+crit.sequences package
+======================
 
 Submodules
 ----------
 
-crit\.sequences\.sequence module
---------------------------------
+.. toctree::
 
-.. automodule:: crit.sequences.sequence
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   crit.sequences.sequence
 
 Module contents
 ---------------
 
 .. automodule:: crit.sequences
     :members:
-    :undoc-members:
     :show-inheritance:

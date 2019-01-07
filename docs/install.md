@@ -140,8 +140,9 @@ The url to the docs are:
 
 To build the docs go to the `docs` directory:
 ```
-sphinx-apidoc -o . ../crit -f
-cp ../README.md index.md
+export SPHINX_APIDOC_OPTIONS=members,show-inheritance
+sphinx-apidoc -o . ../crit -f -e
+cp ../README.md install.md
 sphinx-build -b html . _build
 ```
 

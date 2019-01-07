@@ -1,30 +1,17 @@
-crit\.config package
-====================
+crit.config package
+===================
 
 Submodules
 ----------
 
-crit\.config\.config\_module module
------------------------------------
+.. toctree::
 
-.. automodule:: crit.config.config_module
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-crit\.config\.host module
--------------------------
-
-.. automodule:: crit.config.host
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   crit.config.config_module
+   crit.config.host
 
 Module contents
 ---------------
 
 .. automodule:: crit.config
     :members:
-    :undoc-members:
     :show-inheritance:

@@ -1,22 +1,16 @@
-crit\.commands package
-======================
+crit.commands package
+=====================
 
 Submodules
 ----------
 
-crit\.commands\.cli module
---------------------------
+.. toctree::
 
-.. automodule:: crit.commands.cli
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   crit.commands.cli
 
 Module contents
 ---------------
 
 .. automodule:: crit.commands
     :members:
-    :undoc-members:
     :show-inheritance:

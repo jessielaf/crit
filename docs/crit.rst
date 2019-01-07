@@ -14,27 +14,14 @@ Subpackages
 Submodules
 ----------
 
-crit\.exceptions module
------------------------
+.. toctree::
 
-.. automodule:: crit.exceptions
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-crit\.utils module
-------------------
-
-.. automodule:: crit.utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
+   crit.exceptions
+   crit.utils
 
 Module contents
 ---------------
 
 .. automodule:: crit
     :members:
-    :undoc-members:
     :show-inheritance:
