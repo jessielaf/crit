@@ -9,6 +9,9 @@ here = path.abspath(path.dirname(__file__))
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
+with open('requirements-build.txt') as f:
+    required_build = f.read().splitlines()
+
 setup(
     name='crit',
 
@@ -63,6 +66,10 @@ setup(
     packages=find_packages(),
 
     install_requires=required,
+
+    extras_require={
+        'docs': required_build
+    },
 
     include_package_data=True,
 )
