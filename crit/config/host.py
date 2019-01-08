@@ -35,4 +35,7 @@ class Localhost(Host):
     """
 
     url: str = 'localhost'
-    ssh_user: str = os.getlogin()
+    try:
+        ssh_user: str = os.getlogin()
+    except OSError:
+        ssh_user: str = 'LOCAL USER'
