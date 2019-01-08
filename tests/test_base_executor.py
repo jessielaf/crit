@@ -68,3 +68,7 @@ class OutputToTableTest(unittest.TestCase):
         self.assertEqual(colored('localhost', 'red'), host)
         self.assertEqual(colored('Test output', 'red'), output)
         self.assertEqual(colored('FAIL', 'red'), status)
+
+
+if __name__ == '__main__':
+    unittest.main()

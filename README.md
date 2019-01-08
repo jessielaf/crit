@@ -138,12 +138,12 @@ Right now we test the cli and the base executor because that is where most of th
 
 The url to the docs are:
 
-To build the docs go to the `docs` directory:
+To build the docs:
 ```
 export SPHINX_APIDOC_OPTIONS=members,show-inheritance
-sphinx-apidoc -o . ../crit -f -e
+sphinx-apidoc -o docs crit -f -e
 cp ../README.md install.md
-sphinx-build -b html . _build
+sphinx-build -b html docs docs/_build
 ```
 
 ## Deployment

@@ -35,9 +35,8 @@ class BaseExecutor(metaclass=ABCMeta):
         'Output'
     ]
 
-    @property
     @abstractmethod
-    def commands(self) -> str:
+    def commands(self, host: Host) -> str:
         """
         The commands that will be executed
 
@@ -74,8 +73,7 @@ class BaseExecutor(metaclass=ABCMeta):
         Returns:
              Tuple[Host, str, bool]: The stdout from the command in the table format
         """
-
-        stdin, stdout, stderr = self.get_client(host).exec_command(self.commands)
+        stdin, stdout, stderr = self.get_client(host).exec_command(self.commands(host))
 
         error = stderr.read().decode().split('\n')
         if error != ['']:
@@ -114,7 +112,7 @@ class BaseExecutor(metaclass=ABCMeta):
         """
         width = shutil.get_terminal_size((80, 20)).columns - 1
 
-        line = '#' * width
+        line = '=' * width
 
         print('\n')
         print(line)

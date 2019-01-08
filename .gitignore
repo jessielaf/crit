@@ -11,5 +11,3 @@ __pycache__/
 # Docs
 !/docs/_build/.gitkeep
 /docs/_build
-!/docs/_static/.gitkeep
-/docs/_static

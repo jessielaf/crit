@@ -24,10 +24,10 @@ class Config(object):
         Override getattr method so the getattr function will be ran on the private class
         """
 
-        if hasattr(self, name):
+        try:
             return self.__getattribute__(name)
-
-        return self.run[name]
+        except AttributeError:
+            return self.__getattribute__('run')[name]
 
     def __setattr__(self, name, value):
         if hasattr(self, name):

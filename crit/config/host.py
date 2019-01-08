@@ -1,6 +1,5 @@
 import os
-from dataclasses import dataclass, field
-from typing import Dict
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -35,6 +34,8 @@ class Localhost(Host):
     """
 
     url: str = 'localhost'
+
+    # Added the try except for read the docs os.getlogin() needs permissions
     try:
         ssh_user: str = os.getlogin()
     except OSError:

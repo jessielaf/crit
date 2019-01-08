@@ -13,6 +13,5 @@ class CommandExecutor(BaseExecutor):
     command: str = None
     output: bool = True
 
-    @property
-    def commands(self) -> str:
+    def commands(self, host) -> str:
         return self.command
