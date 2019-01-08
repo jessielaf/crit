@@ -84,9 +84,9 @@ Crit comes with some default executors
 
 | Name               | Description                                                  | Doc url |
 |--------------------|--------------------------------------------------------------|---------|
-| `BaseExecutor`     | The base executor where all the other executors are build on |         |
-| `CommandExecutor`  | Executes a command on a server                               |         |
-| `TemplateExecutor` | Creates a file on the host based on a template               |         |
+| `BaseExecutor`     | The base executor where all the other executors are build on | [link](https://crit.readthedocs.io/en/latest/crit.executors.base_executor.html)        |
+| `CommandExecutor`  | Executes a command on a server                               | [link](https://crit.readthedocs.io/en/latest/crit.executors.command_executor.html)        |
+| `TemplateExecutor` | Creates a file on the host based on a template               | [link](https://crit.readthedocs.io/en/latest/crit.executors.template_executor.html)        |
 
 > All executors can be found in the namespace `crit.executors`
 
