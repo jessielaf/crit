@@ -110,10 +110,8 @@ class CommandExecutor(BaseExecutor):
     command: str = None
     output: bool = True
 
-    @property
-    def commands(self) -> str:
+    def commands(self, host) -> str:
         return self.command
-
 ```
 
 > All the attributes of a custom executor that is also a @dataclass need to have a default value

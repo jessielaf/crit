@@ -10,7 +10,7 @@ class Sequence:
 
     Args:
         executors (List[BaseExecutor]): The executors that will be ran in the same order as this list
-        hosts (Union[Host, List[Host]]): The hosts on which this sequence will run
+        hosts (Union[Host, List[Host]]) `optional`: The hosts on which this sequence will run
     """
     executors: list
     hosts: Union[Host, List[Host]] = None

@@ -16,9 +16,9 @@ class BaseExecutor(metaclass=ABCMeta):
     The base executor contains the logic for executing a command
 
     Args:
-        hosts (Union[Host, List[Host]]): The hosts where the BaseExecutor executes the command on
-        name (str): The name that will be shown as title
-        output (str): Output the stdout from the executor
+        hosts (Union[Host, List[Host]]) `optional`: The hosts where the BaseExecutor executes the command on
+        name (str) `optional`: The name that will be shown as title
+        output (str) = False: Output the stdout from the executor
 
     Attributes:
         sequence (Sequence): The sequence that runs the executor
@@ -41,7 +41,7 @@ class BaseExecutor(metaclass=ABCMeta):
         The commands that will be executed
 
         Returns:
-            str: The commands to run on the server
+            The commands to run on the server
         """
         pass
 
@@ -71,7 +71,7 @@ class BaseExecutor(metaclass=ABCMeta):
             host (Host): The host where to run the command on
 
         Returns:
-             Tuple[Host, str, bool]: The stdout from the command in the table format
+             The stdout from the command in the table format
         """
         stdin, stdout, stderr = self.get_client(host).exec_command(self.commands(host))
 
@@ -90,7 +90,7 @@ class BaseExecutor(metaclass=ABCMeta):
             host: The host for which the client should be returned
 
         Returns:
-            paramiko.SSHClient: Client which can run the commands
+            Client which can run the commands
         """
         if host.url in config.channels:
             return config.channels[host.url]
@@ -129,7 +129,7 @@ class BaseExecutor(metaclass=ABCMeta):
             status:
 
         Returns:
-             Tuple[Host, str, bool]: The stdout from the command in the table format
+             The stdout from the command in the table format
         """
 
         output = self.output

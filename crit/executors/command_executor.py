@@ -9,6 +9,7 @@ class CommandExecutor(BaseExecutor):
 
     Args:
         command (str): The command to be executed
+        output (str) = True: Output the stdout from the executor
     """
     command: str = None
     output: bool = True
