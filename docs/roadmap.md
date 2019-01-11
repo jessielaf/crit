@@ -8,7 +8,7 @@ Here you can see what we define as critical functions we want to add in the newe
 * **extra variables**: add the option to pass extra vars via de cli. These variables will be added to the registry automatically
 * **questionables**: Add the option to ask a question before a certain executor or sequence. Also add the option to the questionables to be able to skip them if the same registry variable already exists.
 
-# Future
+## Future
 
 These are functions that will eventually be implemented by crit but are too much into the future for now. 
 
