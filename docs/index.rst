@@ -12,9 +12,10 @@ Contents
 .. toctree::
    :maxdepth: 2
    :glob:
-   :caption: Installation
+   :caption: About Crit
 
    install
+   roadmap
 
 .. toctree::
    :maxdepth: 2
