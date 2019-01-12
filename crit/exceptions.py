@@ -28,3 +28,11 @@ class NoSequenceException(Exception):
     """
 
     msg = 'Sequence file does not contain a sequence variable'
+
+
+class WrongExtraVarsFormatException(Exception):
+    """
+    Gets thrown if the sequence file specified does not have sequence variable specified
+    """
+
+    msg = 'The format of the extra vars is not correct'

@@ -67,12 +67,13 @@ Now you can run crit by using the crit command `crit sequence.py`
 
 The **first parameter** is the path to the **sequence script** but crit also has some other parameters:
 
-| Short | Long       | Default   | Description                              |
-|-------|------------|-----------|------------------------------------------|
-| `-h`  | `--hosts`  | all       | The hosts on which the sequence will run |
-| `-c`  | `--config` | config.py | The path config file of crit             |
-| `-t`  | `--tags`   | None      | Comma separated string with the tags which filters which executors will run |
-| `-st` | `--skip-tags` | None | Comma separated string with the tags the sequence will skip |
+| Short | Long       | Default   | Description                              | Example |
+|-------|------------|-----------|------------------------------------------|---------|
+| `-h`  | `--hosts`  | all       | The hosts on which the sequence will run | `localhost` |
+| `-c`  | `--config` | config.py | The path config file of crit             | `config/prod.py` |
+| `-t`  | `--tags`   | ''      | Comma separated string with the tags which filters which executors will run | `tag1,tag2` |
+| `-st` | `--skip-tags` | '' | Comma separated string with the tags the sequence will skip | `tag3,tag4` |
+| `-e` | `--extra-vars` | '' | Key value based variable that will be inserted into the registry | `'key=value key2=value2'` |
 
 ## Executors
 

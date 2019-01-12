@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 from crit.commands import cli
 from crit.config import Localhost, config
-from crit.exceptions import NoSequenceException, HostNotFoundException
+from crit.exceptions import NoSequenceException, HostNotFoundException, WrongExtraVarsFormatException
 from tests.helpers.config import hosts
 
 
@@ -152,7 +152,7 @@ class SequenceFileTests(unittest.TestCase):
             cli.run_sequence(os.path.join(get_helper_directory(), 'test1.py'))
 
 
-class AddTagsAndSkipTags(unittest.TestCase):
+class AddTagsAndSkipTagsTests(unittest.TestCase):
     def test_no_tags_no_skip_tags(self):
         cli.add_tags_and_skip_tags('', '')
 
@@ -165,6 +165,30 @@ class AddTagsAndSkipTags(unittest.TestCase):
         self.assertEqual(config.tags, ['tag1', 'tag2'])
         self.assertEqual(config.skip_tags, ['tag3', 'tag4'])
 
+    def tearDown(self):
+        config.tags = []
+        config.skip_tags = []
+
+class AddExtraVarsTests(unittest.TestCase):
+    def test_no_extra_vars(self):
+        cli.add_extra_vars('')
+        self.assertEqual(config.registry, {})
+
+    def test_one_extra_vars(self):
+        cli.add_extra_vars('key=value')
+        self.assertEqual(config.registry, {'key': 'value'})
+
+    def test_multiple_extra_vars(self):
+        cli.add_extra_vars('key=value key2=value2')
+        self.assertEqual(config.registry, {'key': 'value', 'key2': 'value2'})
+
+    def test_wong_extra_vars(self):
+        with self.assertRaises(WrongExtraVarsFormatException):
+            cli.add_extra_vars('key=value key2-value2')
+
+
+    def tearDown(self):
+        config.registry = {}
 
 if __name__ == '__main__':
     unittest.main()

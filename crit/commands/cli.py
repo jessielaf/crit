@@ -3,7 +3,7 @@ from typing import Union, List
 
 import click
 from importlib.machinery import SourceFileLoader
-from crit.exceptions import ConfigHasNoHostsException, NoSequenceException
+from crit.exceptions import ConfigHasNoHostsException, NoSequenceException, WrongExtraVarsFormatException
 from crit.config import Localhost, config as config_module, config
 from crit.utils import get_host_by_name
 
@@ -12,9 +12,10 @@ from crit.utils import get_host_by_name
 @click.argument('sequence_file')
 @click.option('-h', '--hosts', default='all')
 @click.option('-c', '--config', default='config.py')
-@click.option('-t', '--tags', default=None)
-@click.option('-st', '--skip-tags', default=None)
-def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: str, skip_tags: str):
+@click.option('-t', '--tags', default='')
+@click.option('-st', '--skip-tags', default='')
+@click.option('-e', '--extra-vars', default='')
+def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: str, skip_tags: str, extra_vars: str):
     """
     The function run when running the cli
 
@@ -24,6 +25,7 @@ def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: st
         config (str): The path to the config file
         tags (str): Comma separated option with the tags which should run
         skip_tags (str): Comma separated option with the tags the sequence should skip
+        extra_vars (str): Key value based environment variables
     """
 
     add_config(config)
@@ -84,7 +86,29 @@ def run_sequence(sequence_file: str):
         raise NoSequenceException()
 
 
-def add_tags_and_skip_tags(tags, skip_tags):
+def add_extra_vars(extra_vars: str):
+    """
+    Adds the extra_vars to the registry
+
+    Args:
+        extra_vars (str): The extra variables passed via the cli
+    """
+
+    if not extra_vars:
+        return
+
+    key_values = extra_vars.split(' ')
+
+    for key_value in key_values:
+        splitted = key_value.split('=')
+
+        if len(splitted) != 2:
+            raise WrongExtraVarsFormatException()
+
+        config.registry[splitted[0]] = splitted[1]
+
+
+def add_tags_and_skip_tags(tags: str, skip_tags: str):
     config.tags = tags.split(',') if tags else []
     config.skip_tags = skip_tags.split(',') if skip_tags else []
 
