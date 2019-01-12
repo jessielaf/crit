@@ -18,8 +18,11 @@ from crit.utils import get_host_by_name
 def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: str, skip_tags: str, extra_vars: str):
     add_config(config)
     add_hosts(hosts)
-    run_sequence(sequence_file)
     add_tags_and_skip_tags(tags, skip_tags)
+    add_extra_vars(extra_vars)
+
+    # Should always be the last one to run
+    run_sequence(sequence_file)
 
 
 def add_config(config: str):
@@ -74,6 +77,11 @@ def run_sequence(sequence_file: str):
         raise NoSequenceException()
 
 
+def add_tags_and_skip_tags(tags: str, skip_tags: str):
+    config.tags = tags.split(',') if tags else []
+    config.skip_tags = skip_tags.split(',') if skip_tags else []
+
+
 def add_extra_vars(extra_vars: str):
     """
     Adds the extra_vars to the registry
@@ -94,11 +102,6 @@ def add_extra_vars(extra_vars: str):
             raise WrongExtraVarsFormatException()
 
         config.registry[splitted[0]] = splitted[1]
-
-
-def add_tags_and_skip_tags(tags: str, skip_tags: str):
-    config.tags = tags.split(',') if tags else []
-    config.skip_tags = skip_tags.split(',') if skip_tags else []
 
 
 if __name__ == "__main__":
