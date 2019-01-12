@@ -10,24 +10,12 @@ from crit.utils import get_host_by_name
 
 @click.command()
 @click.argument('sequence_file')
-@click.option('-h', '--hosts', default='all')
-@click.option('-c', '--config', default='config.py')
-@click.option('-t', '--tags', default='')
-@click.option('-st', '--skip-tags', default='')
-@click.option('-e', '--extra-vars', default='')
+@click.option('-h', '--hosts', default='all', help='The hosts on which the sequence will run')
+@click.option('-c', '--config', default='config.py', help='The path to the config file of crit')
+@click.option('-t', '--tags', default='', help='Comma separated string with the tags which filters which executors will run')
+@click.option('-st', '--skip-tags', default='', help='Comma separated string with the tags the sequence will skip')
+@click.option('-e', '--extra-vars', default='', help='Key value based variable that will be inserted into the registry')
 def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: str, skip_tags: str, extra_vars: str):
-    """
-    The function run when running the cli
-
-    Args:
-        sequence_file (str): The sequence file that will be ran
-        hosts (Union[str, List[str]]): The hosts on which crit will run
-        config (str): The path to the config file
-        tags (str): Comma separated option with the tags which should run
-        skip_tags (str): Comma separated option with the tags the sequence should skip
-        extra_vars (str): Key value based environment variables
-    """
-
     add_config(config)
     add_hosts(hosts)
     run_sequence(sequence_file)
