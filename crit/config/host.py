@@ -8,12 +8,12 @@ class Host:
     Configuration for a specific host
 
     Args:
-        url (str): The url of the host
-        ssh_user (str): The user that will be used when ssh'ing into the host
-        ssh_password (str): The password that will be used when ssh'ing into the host
-        ssh_identity_file (str): The path to the private key
-        name (str): The name that will be displayed when using the cli commands
-        data (dict): Data specific for host
+        url (str): The url of the host. :obj:`required`
+        ssh_user (str): The user that will be used when ssh'ing into the host. :obj:`required`
+        ssh_password (str): The password that will be used when ssh'ing into the host. :obj:`optional`
+        ssh_identity_file (str): The path to the private key. Defaults to :obj:`'~/.ssh/id_rsa'`
+        name (str): The name that will be displayed when using the cli commands. :obj:`optional`
+        data (dict): Data specific for host. :obj:`optional`
     """
 
     url: str

@@ -110,10 +110,8 @@ class CommandExecutor(BaseExecutor):
     command: str = None
     output: bool = True
 
-    @property
-    def commands(self) -> str:
+    def commands(self, host) -> str:
         return self.command
-
 ```
 
 > All the attributes of a custom executor that is also a @dataclass need to have a default value
@@ -138,12 +136,12 @@ Right now we test the cli and the base executor because that is where most of th
 
 The url to the docs are:
 
-To build the docs go to the `docs` directory:
+To build the docs:
 ```
 export SPHINX_APIDOC_OPTIONS=members,show-inheritance
-sphinx-apidoc -o . ../crit -f -e
-cp ../README.md install.md
-sphinx-build -b html . _build
+sphinx-apidoc -o docs crit -f -e
+cp README.md docs/install.md
+sphinx-build -b html docs docs/_build
 ```
 
 ## Deployment

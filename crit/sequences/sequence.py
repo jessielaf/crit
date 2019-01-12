@@ -9,8 +9,8 @@ class Sequence:
     The sequence that will be ran by the cli command
 
     Args:
-        executors (List[BaseExecutor]): The executors that will be ran in the same order as this list
-        hosts (Union[Host, List[Host]]) `optional`: The hosts on which this sequence will run
+        executors (List[BaseExecutor]): The executors that will be ran in the same order as this list. :obj:`required`
+        hosts (Union[Host, List[Host]]): The hosts on which this sequence will run. :obj:`optional`
     """
     executors: list
     hosts: Union[Host, List[Host]] = None

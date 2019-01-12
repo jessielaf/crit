@@ -1,9 +1,11 @@
 import os
+from dataclasses import dataclass
 from jinja2 import Template
 from crit.config import config, Host
 from crit.executors import BaseExecutor
 
 
+@dataclass
 class TemplateExecutor(BaseExecutor):
     """Creates a file based on a template
 
@@ -16,17 +18,12 @@ class TemplateExecutor(BaseExecutor):
     * `current_host`: The host where the command is running on
 
     Args:
-        src (str): The source of the template. Relative to the work directory
-        dest (str): Destination on the host where the template should be put
+        src (str): The source of the template. Relative to the work directory. :obj:`required`
+        dest (str): Destination on the host where the template should be put. :obj:`required`
     """
 
-    src: str
-    dest: str
-
-    def __init__(self, src: str, dest: str, *args, **kwargs):
-        self.src = src
-        self.dest = dest
-        super().__init__(*args, **kwargs)
+    src: str = ''
+    dest: str = ''
 
     def commands(self, host: Host) -> str:
         """

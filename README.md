@@ -140,7 +140,7 @@ To build the docs:
 ```
 export SPHINX_APIDOC_OPTIONS=members,show-inheritance
 sphinx-apidoc -o docs crit -f -e
-cp ../README.md install.md
+cp README.md docs/install.md
 sphinx-build -b html docs docs/_build
 ```
 

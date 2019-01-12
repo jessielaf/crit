@@ -16,9 +16,9 @@ class BaseExecutor(metaclass=ABCMeta):
     The base executor contains the logic for executing a command
 
     Args:
-        hosts (Union[Host, List[Host]]) `optional`: The hosts where the BaseExecutor executes the command on
-        name (str) `optional`: The name that will be shown as title
-        output (str) = False: Output the stdout from the executor
+        hosts (Union[Host, List[Host]]): The hosts where the BaseExecutor executes the command on. :obj:`optional`
+        name (str): The name that will be shown as title. :obj:`optional`
+        output (str): Output the stdout from the executor. Defaults to :obj:`False`
 
     Attributes:
         sequence (Sequence): The sequence that runs the executor
