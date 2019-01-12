@@ -18,6 +18,7 @@ class BaseExecutor(metaclass=ABCMeta):
     Args:
         hosts (Union[Host, List[Host]]): The hosts where the BaseExecutor executes the command on. :obj:`optional`
         name (str): The name that will be shown as title. :obj:`optional`
+        tags (List[str): The tags decide if the executor will run if tags are passed via the cli. :obj:`optional`
         output (str): Output the stdout from the executor. Defaults to :obj:`False`
 
     Attributes:
@@ -25,9 +26,13 @@ class BaseExecutor(metaclass=ABCMeta):
         headers (List[str]): The headers for the output for the cli
     """
 
+    # Args
     hosts: Union[Host, List[Host]] = None
     name: str = None
+    tags: List[str] = None
     output: bool = False
+
+    # Attributes
     sequence: Sequence = None
     headers = [
         'Host',
@@ -126,7 +131,7 @@ class BaseExecutor(metaclass=ABCMeta):
         Args:
             host (Host): The host on which the command is ran with
             output_text (str): The output of the str
-            status:
+            status (bool): Status of the command. This means succeeded or not
 
         Returns:
              The stdout from the command in the table format
@@ -142,3 +147,23 @@ class BaseExecutor(metaclass=ABCMeta):
             status_text = 'FAIL'
 
         return colored(host, color), colored(status_text, color), (colored(output_text, color) if output else '')
+
+    def can_run_tags(self) -> bool:
+        """
+        Check if the executor can run based on the tags. It prefers tags over skiptags
+
+        Returns:
+            If the executor can run or not
+        """
+
+        if config.tags:
+            in_tags = [tag for tag in self.tags if tag in config.tags]
+
+            return len(in_tags) > 0
+        elif config.skip_tags:
+            in_skip_tags = [tag for tag in self.tags if tag in config.skip_tags]
+
+            return len(in_skip_tags) == 0
+
+        return True
+

@@ -17,6 +17,8 @@ class Config(object):
     hosts: List[Host] = []
     all_hosts: List[Host] = []
     channels: Dict[str, SSHClient] = {}
+    tags: List[str] = []
+    skip_tags: List[str] = []
     registry: list = {}
 
     def __getattr__(self, name):

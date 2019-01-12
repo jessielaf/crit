@@ -152,5 +152,19 @@ class SequenceFileTests(unittest.TestCase):
             cli.run_sequence(os.path.join(get_helper_directory(), 'test1.py'))
 
 
+class AddTagsAndSkipTags(unittest.TestCase):
+    def test_no_tags_no_skip_tags(self):
+        cli.add_tags_and_skip_tags('', '')
+
+        self.assertEqual(config.tags, [])
+        self.assertEqual(config.skip_tags, [])
+
+    def test_with_tags_with_skip_tags(self):
+        cli.add_tags_and_skip_tags('tag1,tag2', 'tag3,tag4')
+
+        self.assertEqual(config.tags, ['tag1', 'tag2'])
+        self.assertEqual(config.skip_tags, ['tag3', 'tag4'])
+
+
 if __name__ == '__main__':
     unittest.main()

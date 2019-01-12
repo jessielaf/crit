@@ -71,6 +71,8 @@ The **first parameter** is the path to the **sequence script** but crit also has
 |-------|------------|-----------|------------------------------------------|
 | `-h`  | `--hosts`  | all       | The hosts on which the sequence will run |
 | `-c`  | `--config` | config.py | The path config file of crit             |
+| `-t`  | `--tags`   | None      | Comma separated string with the tags which filters which executors will run |
+| `-st` | `--skip-tags` | None | Comma separated string with the tags the sequence will skip |
 
 ## Executors
 

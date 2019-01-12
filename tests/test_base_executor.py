@@ -3,7 +3,7 @@ from io import BytesIO
 from unittest import mock
 from unittest.mock import patch, Mock
 from termcolor import colored
-from crit.config import Localhost
+from crit.config import Localhost, config
 from crit.executors import BaseExecutor
 
 
@@ -69,6 +69,51 @@ class OutputToTableTest(unittest.TestCase):
         self.assertEqual(colored('Test output', 'red'), output)
         self.assertEqual(colored('FAIL', 'red'), status)
 
+
+class TagsTest(unittest.TestCase):
+    """
+    Tests if the right response is returned when some tags are set
+    """
+
+    def test_no_tags_no_skip_tags(self):
+        config.tags = []
+        config.skip_tags = []
+
+        self.assertTrue(get_executor().can_run_tags())
+
+    def test_with_tags_no_skip_tags_tags_in_executor(self):
+        config.tags = ['tag1']
+        config.skip_tags = []
+
+        self.assertTrue(get_executor(tags=['tag1', 'tag2']).can_run_tags())
+
+    def test_with_tags_no_skip_tags_tags_not_in_executor(self):
+        config.tags = ['tag1']
+        config.skip_tags = []
+
+        self.assertTrue(not get_executor(tags=['tag2']).can_run_tags())
+
+    def test_no_tags_with_skip_tags_skip_tags_in_executor(self):
+        config.tags = []
+        config.skip_tags = ['tag2']
+
+        self.assertTrue(not get_executor(tags=['tag1', 'tag2']).can_run_tags())
+
+    def test_no_tags_with_skip_tags_skip_tags_not_in_executor(self):
+        config.tags = []
+        config.skip_tags = ['tag2']
+
+        self.assertTrue(get_executor(tags=['tag1']).can_run_tags())
+
+    def test_tags_and_skip_tags_in_executor(self):
+        """
+        This test the priority of the config.tags over config.skip_tags
+        """
+
+        config.tags = ['tag1']
+        config.skip_tags = ['tag1']
+
+        self.assertTrue(get_executor(tags=['tag1']).can_run_tags())
 
 if __name__ == '__main__':
     unittest.main()
