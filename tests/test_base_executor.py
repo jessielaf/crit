@@ -59,14 +59,14 @@ class OutputToTableTest(unittest.TestCase):
         host, status, output = get_executor(output=True).output_to_table(Localhost(), 'Test output', True)
 
         self.assertEqual(colored('localhost', 'green'), host)
-        self.assertEqual(colored('Test output', 'green'), output)
+        self.assertEqual('Test output', output)
         self.assertEqual(colored('SUCCESS', 'green'), status)
 
     def test_output_to_table_fail_no_output(self):
         host, status, output = get_executor().output_to_table(Localhost(), 'Test output', False)
 
         self.assertEqual(colored('localhost', 'red'), host)
-        self.assertEqual(colored('Test output', 'red'), output)
+        self.assertEqual('Test output', output)
         self.assertEqual(colored('FAIL', 'red'), status)
 
 
@@ -81,6 +81,18 @@ class TagsTest(unittest.TestCase):
 
         self.assertTrue(get_executor().can_run_tags())
 
+    def test_with_tags_no_skip_no_tags_in_executor(self):
+        config.tags = ['tag1']
+        config.skip_tags = []
+
+        self.assertFalse(get_executor().can_run_tags())
+
+    def test_no_tags_with_skip_no_tags_in_executor(self):
+        config.tags = []
+        config.skip_tags = ['tag1']
+
+        self.assertTrue(get_executor().can_run_tags())
+
     def test_with_tags_no_skip_tags_tags_in_executor(self):
         config.tags = ['tag1']
         config.skip_tags = []
@@ -91,13 +103,13 @@ class TagsTest(unittest.TestCase):
         config.tags = ['tag1']
         config.skip_tags = []
 
-        self.assertTrue(not get_executor(tags=['tag2']).can_run_tags())
+        self.assertFalse(get_executor(tags=['tag2']).can_run_tags())
 
     def test_no_tags_with_skip_tags_skip_tags_in_executor(self):
         config.tags = []
         config.skip_tags = ['tag2']
 
-        self.assertTrue(not get_executor(tags=['tag1', 'tag2']).can_run_tags())
+        self.assertFalse(get_executor(tags=['tag1', 'tag2']).can_run_tags())
 
     def test_no_tags_with_skip_tags_skip_tags_not_in_executor(self):
         config.tags = []

@@ -7,7 +7,14 @@ sequence = Sequence(
     executors=[
         CommandExecutor(
             hosts=Localhost(),
-            command='ls -a'
+            command='ls -a',
+            name='Run ls -a'
+        ),
+        CommandExecutor(
+            hosts=Localhost(),
+            command='ls -la',
+            tags=['list'],
+            name='Run ls -l'
         )
     ]
 )

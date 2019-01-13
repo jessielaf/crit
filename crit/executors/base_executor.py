@@ -4,11 +4,9 @@ from typing import Union, List, Tuple
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 import paramiko
-from tabulate import tabulate
 from termcolor import colored
 from crit.config import Host, config
 from crit.sequences import Sequence
-
 
 @dataclass
 class BaseExecutor(metaclass=ABCMeta):
@@ -24,6 +22,7 @@ class BaseExecutor(metaclass=ABCMeta):
     Attributes:
         sequence (Sequence): The sequence that runs the executor
         headers (List[str]): The headers for the output for the cli
+        term_width (int): Width of the terminal
     """
 
     # Args
@@ -35,10 +34,11 @@ class BaseExecutor(metaclass=ABCMeta):
     # Attributes
     sequence: Sequence = None
     headers = [
-        'Host',
-        'Status',
-        'Output'
+        colored('Host', 'white', attrs=['bold']),
+        colored('Status', attrs=['bold']),
+        colored('Output', attrs=['bold']),
     ]
+    term_width = shutil.get_terminal_size((80, 20)).columns - 1
 
     @abstractmethod
     def commands(self, host: Host) -> str:
@@ -57,6 +57,10 @@ class BaseExecutor(metaclass=ABCMeta):
 
         self.print_title()
 
+        if not self.can_run_tags():
+            print(colored('Skipping based on tags', 'cyan'))
+            return
+
         hosts = self.hosts or self.sequence.hosts
         results = []
 
@@ -66,9 +70,10 @@ class BaseExecutor(metaclass=ABCMeta):
             for host in hosts:
                 results.append(self.run_command(host))
 
-        print(tabulate(results, self.headers, tablefmt="github"), '\n')
+        self.print_table(results)
+        print('\n')
 
-    def run_command(self, host: Host) -> Tuple[Host, str, bool]:
+    def run_command(self, host: Host) -> Tuple[Host, str, str]:
         """
         Runs a command on a specific host
 
@@ -115,16 +120,14 @@ class BaseExecutor(metaclass=ABCMeta):
         """
         Prints the title of the executor in the commandline
         """
-        width = shutil.get_terminal_size((80, 20)).columns - 1
 
-        line = '=' * width
+        line = '=' * self.term_width
 
-        print('\n')
         print(line)
         print(colored(self.name or self.__class__.__name__, attrs=['bold']))
         print(line)
 
-    def output_to_table(self, host: Host, output_text: str, status: bool) -> Tuple[Host, str, bool]:
+    def output_to_table(self, host: Host, output_text: str, status: bool) -> Tuple[Host, str, str]:
         """
         Transforms the output to a tuple that tabulate can handle
 
@@ -137,16 +140,15 @@ class BaseExecutor(metaclass=ABCMeta):
              The stdout from the command in the table format
         """
 
-        output = self.output
         if status:
             color = 'green'
             status_text = 'SUCCESS'
         else:
-            output = True
+            self.output = True
             color = 'red'
             status_text = 'FAIL'
 
-        return colored(host, color), colored(status_text, color), (colored(output_text, color) if output else '')
+        return colored(host, color), colored(status_text, color), (str(output_text) if self.output else '')
 
     def can_run_tags(self) -> bool:
         """
@@ -157,13 +159,27 @@ class BaseExecutor(metaclass=ABCMeta):
         """
 
         if config.tags:
+            if not self.tags:
+                return False
+
             in_tags = [tag for tag in self.tags if tag in config.tags]
 
             return len(in_tags) > 0
         elif config.skip_tags:
+            if not self.tags:
+                return True
+
             in_skip_tags = [tag for tag in self.tags if tag in config.skip_tags]
 
             return len(in_skip_tags) == 0
 
         return True
 
+    def print_table(self, results):
+        for index, result  in enumerate(results):
+            for i, header in enumerate(self.headers):
+                if result[i]:
+                    print(header + ': ' + result[i])
+
+            if index + 1 != len(results):
+                print('-' * self.term_width)

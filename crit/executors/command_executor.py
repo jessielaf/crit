@@ -9,10 +9,8 @@ class CommandExecutor(BaseExecutor):
 
     Args:
         command (str): The command to be executed. :obj:`required`
-        output (str) = True: Output the stdout from the executor. Defaults to :obj:`True`
     """
     command: str = None
-    output: bool = True
 
     def commands(self, host) -> str:
         return self.command
