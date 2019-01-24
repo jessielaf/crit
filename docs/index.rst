@@ -40,3 +40,5 @@ Contents
    crit.executors.base_executor
    crit.executors.command_executor
    crit.executors.template_executor
+   crit.executors.apt_executor
+   crit.executors.env_executor
