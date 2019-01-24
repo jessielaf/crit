@@ -6,7 +6,8 @@ from dataclasses import dataclass
 import paramiko
 from termcolor import colored
 from crit.config import Host, config
-from crit.sequences import Sequence
+from .result import Result
+
 
 @dataclass
 class BaseExecutor(metaclass=ABCMeta):
@@ -17,11 +18,14 @@ class BaseExecutor(metaclass=ABCMeta):
         hosts (Union[Host, List[Host]]): The hosts where the BaseExecutor executes the command on. :obj:`optional`
         name (str): The name that will be shown as title. :obj:`optional`
         tags (List[str): The tags decide if the executor will run if tags are passed via the cli. :obj:`optional`
+        sudo (bool): Add sudo before the command. Defaults to :obj:`False`
         output (str): Output the stdout from the executor. Defaults to :obj:`False`
+        register (str): Registers the output of the executor to the register. :obj:`optional`
+        status_nested_executors (str): Defines if the exeutor will run the nested executors. You can choose from :obj:`SUCCESS`, :obj:`CHANGED` & :obj:`FAIL`. Defaults to :obj:`SUCCESS`
+        executors (List[BaseExecutor]): The executors to run when status of the executor aligns with :obj:`status_nested_executors`. :obj:`optional`
+        never_fail (bool): An executor that does not fail based on the output of the executor. Correlates to get_pty of exec_command paramiko
 
     Attributes:
-        sequence (Sequence): The sequence that runs the executor
-        headers (List[str]): The headers for the output for the cli
         term_width (int): Width of the terminal
     """
 
@@ -29,15 +33,14 @@ class BaseExecutor(metaclass=ABCMeta):
     hosts: Union[Host, List[Host]] = None
     name: str = None
     tags: List[str] = None
+    sudo: bool = False
     output: bool = False
+    status_nested_executors: str = 'SUCCESS'
+    executors: List['BaseExecutor'] = None
+    register: str = None
+    never_fail: bool = False
 
     # Attributes
-    sequence: Sequence = None
-    headers = [
-        colored('Host', 'white', attrs=['bold']),
-        colored('Status', attrs=['bold']),
-        colored('Output', attrs=['bold']),
-    ]
     term_width = shutil.get_terminal_size((80, 20)).columns - 1
 
     @abstractmethod
@@ -48,6 +51,7 @@ class BaseExecutor(metaclass=ABCMeta):
         Returns:
             The commands to run on the server
         """
+
         pass
 
     def execute(self):
@@ -61,19 +65,33 @@ class BaseExecutor(metaclass=ABCMeta):
             print(colored('Skipping based on tags', 'cyan'))
             return
 
-        hosts = self.hosts or self.sequence.hosts
-        results = []
+        hosts = self.hosts or config.sequence.hosts
 
         if isinstance(hosts, Host):
-            results.append(self.run_command(hosts))
+            self.execute_on_host(hosts)
         elif isinstance(hosts, List):
             for host in hosts:
-                results.append(self.run_command(host))
+               self.execute_on_host(host)
 
-        self.print_table(results)
-        print('\n')
+    def execute_on_host(self, host: Host):
+        """
+        Executes the command on the host and runs the nested executors if needed
 
-    def run_command(self, host: Host) -> Tuple[Host, str, str]:
+        Args:
+            host: The host on which the executor can run
+        """
+
+        # Check if the host in in available hosts
+        if host in config.all_hosts:
+            result = self.run_command(host)
+            self.register_result(host, result)
+            status = self.output_to_table(host, result)
+
+            if status == self.status_nested_executors and self.executors:
+                for executor in self.executors:
+                    executor.execute_on_host(host)
+
+    def run_command(self, host: Host) -> Result:
         """
         Runs a command on a specific host
 
@@ -81,15 +99,80 @@ class BaseExecutor(metaclass=ABCMeta):
             host (Host): The host where to run the command on
 
         Returns:
-             The stdout from the command in the table format
+             returns the list with the output and if the output was successful or an error
         """
-        stdin, stdout, stderr = self.get_client(host).exec_command(self.commands(host))
+
+        command = self.commands(host)
+
+        if self.sudo:
+            command = 'sudo ' + command
+
+        stdin, stdout, stderr = self.get_client(host).exec_command(command, get_pty=self.never_fail)
 
         error = stderr.read().decode().split('\n')
-        if error != ['']:
-            return self.output_to_table(host, error, False)
 
-        return self.output_to_table(host, stdout.read().decode().split('\n'), True)
+        if error != ['']:
+            # Delete host from the hosts to pick from
+            config.all_hosts.remove(host)
+            return Result(command, error, False)
+
+        return Result(command, stdout.read().decode().split('\n'), True)
+
+    def output_to_table(self, host: Host, result: Result) -> str:
+        """
+        Prints the output of a command to the terminal in a table format
+
+        Args:
+            host (Host): The host on which the command is ran with
+            result (Result): The result of the command ran
+        """
+
+        if result.success:
+            if self.changed(result.stdout):
+                color = 'yellow'
+                status_text = 'CHANGED'
+            else:
+                color = 'green'
+                status_text = 'SUCCESS'
+        else:
+            self.output = True
+            color = 'red'
+            status_text = 'FAIL'
+
+        if config.verbose > 0:
+            print(colored('Command: ', 'white', attrs=['bold']) + result.stdin)
+
+        print(colored('Host: ', 'white', attrs=['bold']) + colored(host, color))
+        print(colored('Status: ', attrs=['bold']) + colored(status_text, color))
+
+        if self.output:
+            print(colored('Output: ', attrs=['bold']) + str(result.stdout))
+
+        print('-' * self.term_width)
+
+        return status_text
+
+    def changed(self, text: List[str]) -> bool:
+        """
+        Checks if the success text means that the status is changed. This function can be overwritten for custom executors
+
+        Args:
+            text (List[str]): A list of strings of the successfull output splitted on \n
+
+        Returns:
+            Boolean that indicated if the item has been changed or not. Defaults to :obj:`False`
+        """
+
+        return False
+
+    def register_result(self, host: Host, result: Result):
+        host_name = repr(host)
+
+        if host_name not in config.registry:
+            config.registry[host_name] = {}
+
+        config.registry[host_name][self.register] = result
+
 
     @staticmethod
     def get_client(host: Host) -> paramiko.SSHClient:
@@ -97,11 +180,12 @@ class BaseExecutor(metaclass=ABCMeta):
         Get paramiko client for the host
 
         Args:
-            host: The host for which the client should be returned
+            host (Host): The host for which the client should be returned
 
         Returns:
             Client which can run the commands
         """
+
         if host.url in config.channels:
             return config.channels[host.url]
         else:
@@ -121,38 +205,18 @@ class BaseExecutor(metaclass=ABCMeta):
         Prints the title of the executor in the commandline
         """
 
-        line = '=' * self.term_width
+        if len(config.all_hosts) != 0:
+            line = '=' * self.term_width
 
-        print(line)
-        print(colored(self.name or self.__class__.__name__, attrs=['bold']))
-        print(line)
-
-    def output_to_table(self, host: Host, output_text: str, status: bool) -> Tuple[Host, str, str]:
-        """
-        Transforms the output to a tuple that tabulate can handle
-
-        Args:
-            host (Host): The host on which the command is ran with
-            output_text (str): The output of the str
-            status (bool): Status of the command. This means succeeded or not
-
-        Returns:
-             The stdout from the command in the table format
-        """
-
-        if status:
-            color = 'green'
-            status_text = 'SUCCESS'
-        else:
-            self.output = True
-            color = 'red'
-            status_text = 'FAIL'
-
-        return colored(host, color), colored(status_text, color), (str(output_text) if self.output else '')
+            print('\n')
+            print(line)
+            print(colored(self.name or self.__class__.__name__, attrs=['bold']))
+            print(line)
 
     def can_run_tags(self) -> bool:
         """
-        Check if the executor can run based on the tags. It prefers tags over skiptags
+        Check if the executor can run based on the tags.
+        It prefers tags over skiptags
 
         Returns:
             If the executor can run or not
@@ -174,12 +238,3 @@ class BaseExecutor(metaclass=ABCMeta):
             return len(in_skip_tags) == 0
 
         return True
-
-    def print_table(self, results):
-        for index, result  in enumerate(results):
-            for i, header in enumerate(self.headers):
-                if result[i]:
-                    print(header + ': ' + result[i])
-
-            if index + 1 != len(results):
-                print('-' * self.term_width)

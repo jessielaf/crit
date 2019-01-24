@@ -1,10 +1,10 @@
 import unittest
+import builtins
 from io import BytesIO
 from unittest import mock
 from unittest.mock import patch, Mock
-from termcolor import colored
 from crit.config import Localhost, config
-from crit.executors import BaseExecutor
+from crit.executors import BaseExecutor, Result
 
 
 @patch.multiple(BaseExecutor, __abstractmethods__=set())
@@ -12,35 +12,104 @@ def get_executor(*args, **kwargs):
     return BaseExecutor(*args, **kwargs)
 
 
-class RunCommandTests(unittest.TestCase):
+class ExecuteOnHostTest(unittest.TestCase):
     """
     Tests if the output paramiko returns is parsed correctly
     """
 
+    host = Localhost()
+    result = Result('input', ['output'], True)
+
+    def test_execute_on_host_host_not_in_config(self):
+        config.all_hosts = []
+
+        self.mock_executor()
+        self.executor.execute_on_host(self.host)
+        self.executor.run_command.assert_not_called()
+
+    def test_execute_on_host_nested_executors(self):
+        nested_executor = get_executor()
+        nested_executor.execute_on_host = Mock()
+
+        self.mock_executor('SUCCESS', executors=[nested_executor])
+
+        self.executor.execute_on_host(self.host)
+        self.executor.register_result.assert_called_with(self.host, self.result)
+        nested_executor.execute_on_host.assert_called_with(self.host)
+
+    def test_execute_on_host_nested_executors_wrong_status(self):
+        nested_executor = get_executor()
+        nested_executor.execute_on_host = Mock()
+
+        self.mock_executor('CHANGED', executors=[nested_executor], status_nested_executors='FAIL')
+
+        self.executor.execute_on_host(self.host)
+        nested_executor.execute_on_host.assert_not_called()
+
+    def mock_executor(self, status='SUCCESS', **kwargs):
+        # Set executor
+        self.executor = get_executor(**kwargs)
+
+        # Mock register_result
+        register_result = Mock()
+        self.executor.register_result = register_result
+
+        # Mock run_command() on executor
+        run_command = Mock()
+        run_command.return_value = self.result
+        self.executor.run_command = run_command
+
+        # Mock output_to_table() on executor
+        output_to_table_mock = Mock()
+        output_to_table_mock.return_value = 'SUCCESS'
+        self.executor.output_to_table = output_to_table_mock
+
+    def setUp(self):
+        config.all_hosts = [self.host]
+
+
+class RunCommandTest(unittest.TestCase):
     @mock.patch('paramiko.SSHClient')
-    def test_run_command_error(self, client_mock):
+    def test_execute_on_host_error(self, client_mock):
         # mock ssh client
         self.mock_executor(client_mock, (BytesIO(b'output'),) * 3)
 
-        self.executor.run_command(Localhost())
-        self.output_to_table_mock.assert_called_with(Localhost(), ['output'], False)
+        result = self.executor.run_command(Localhost())
+        self.assertFalse(result.success)
 
     @mock.patch('paramiko.SSHClient')
-    def test_run_command_success(self, client_mock):
+    def test_execute_on_host_success(self, client_mock):
         # mock ssh client
         self.mock_executor(client_mock, (BytesIO(b'output'), BytesIO(b'output'), BytesIO(b'')))
 
-        self.executor.run_command(Localhost())
-        self.output_to_table_mock.assert_called_with(Localhost(), ['output'], True)
+        result = self.executor.run_command(Localhost())
 
-    def mock_executor(self, client_mock, exec_return):
+        self.assertTrue(result.success)
+
+    @mock.patch('paramiko.SSHClient')
+    def test_execute_on_host_success_sudo(self, client_mock):
+        # mock ssh client
+        self.mock_executor(client_mock, (BytesIO(b'output'), BytesIO(b'output'), BytesIO(b'')), sudo=True)
+
+        result = self.executor.run_command(Localhost())
+
+        self.assertEqual('sudo value', result.stdin)
+
+    def mock_executor(self, client_mock, exec_return, **kwargs):
+        # Set executor
+        self.executor = get_executor(**kwargs)
+
+        # Mock commands() on executor
+        commands_mock = Mock()
+        commands_mock.return_value = 'value'
+        self.executor.commands = commands_mock
+
+        # Mock get_client on executor
         client_mock.return_value.exec_command.return_value = exec_return
-        self.executor = get_executor()
         self.executor.get_client = client_mock
 
-        # Mock output_to_table
-        self.output_to_table_mock = Mock()
-        self.executor.output_to_table = self.output_to_table_mock
+    def setUp(self):
+        config.all_hosts = [Localhost()]
 
 
 class OutputToTableTest(unittest.TestCase):
@@ -48,26 +117,45 @@ class OutputToTableTest(unittest.TestCase):
     Tests if the output of the command is parsed correctly to display in cli
     """
 
-    def test_output_to_table_success_no_output(self):
-        host, status, output = get_executor().output_to_table(Localhost(), 'Test output', True)
+    def test_output_to_table_success(self):
+        self.assertEqual('SUCCESS', get_executor().output_to_table(Localhost(), Result('value', ['Test output'], True)))
 
-        self.assertEqual(colored('localhost', 'green'), host)
-        self.assertEqual('', output)
-        self.assertEqual(colored('SUCCESS', 'green'), status)
+    def test_output_to_table_changed(self):
+        executor = get_executor()
+        changed_function = Mock()
+        changed_function.return_value = True
+        executor.changed = changed_function
 
-    def test_output_to_table_success_with_output(self):
-        host, status, output = get_executor(output=True).output_to_table(Localhost(), 'Test output', True)
+        self.assertEqual('CHANGED', executor.output_to_table(Localhost(), Result('value', ['Test output'], True)))
 
-        self.assertEqual(colored('localhost', 'green'), host)
-        self.assertEqual('Test output', output)
-        self.assertEqual(colored('SUCCESS', 'green'), status)
+    def test_output_to_table_fail(self):
+        self.assertEqual('FAIL', get_executor().output_to_table(Localhost(), Result('value', ['Test output'], False)))
 
-    def test_output_to_table_fail_no_output(self):
-        host, status, output = get_executor().output_to_table(Localhost(), 'Test output', False)
+    @classmethod
+    def setUpClass(cls):
+        """
+        Overwrite print because it is annoying to see it in the console
+        """
 
-        self.assertEqual(colored('localhost', 'red'), host)
-        self.assertEqual('Test output', output)
-        self.assertEqual(colored('FAIL', 'red'), status)
+        builtins.print = cls.overwrite_print
+
+    def overwrite_print(self, *args, **kwargs):
+        pass
+
+
+class RegisterResultTest(unittest.TestCase):
+    def test_register_result(self):
+        executor = get_executor(register='test')
+        result = Result('test', ['test'], True)
+        host = Localhost()
+
+        executor.register_result(host, result)
+
+        self.assertEqual(config.registry[repr(host)]['test'], result)
+
+    @classmethod
+    def tearDownClass(cls):
+        config.registry = {}
 
 
 class TagsTest(unittest.TestCase):

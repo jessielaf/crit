@@ -15,11 +15,13 @@ from crit.utils import get_host_by_name
 @click.option('-t', '--tags', default='', help='Comma separated string with the tags which filters which executors will run')
 @click.option('-st', '--skip-tags', default='', help='Comma separated string with the tags the sequence will skip')
 @click.option('-e', '--extra-vars', default='', help='Key value based variable that will be inserted into the registry')
-def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: str, skip_tags: str, extra_vars: str):
+@click.option('-v', '--verbose', default=0, count=True, help='Shows the commands that are running')
+def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: str, skip_tags: str, extra_vars: str, verbose: int):
     add_config(config)
     add_hosts(hosts)
     add_tags_and_skip_tags(tags, skip_tags)
     add_extra_vars(extra_vars)
+    set_verbose(verbose)
 
     # Should always be the last one to run
     run_sequence(sequence_file)
@@ -72,7 +74,9 @@ def run_sequence(sequence_file: str):
         sequence_file))).load_module()
 
     if hasattr(sequence_object, 'sequence'):
-        sequence_object.sequence.run()
+        sequence = sequence_object.sequence
+        config.sequence = sequence
+        sequence.run()
     else:
         raise NoSequenceException()
 
@@ -102,6 +106,17 @@ def add_extra_vars(extra_vars: str):
             raise WrongExtraVarsFormatException()
 
         config.registry[splitted[0]] = splitted[1]
+
+
+def set_verbose(verbose: int):
+    """
+    Sets the debug level
+
+    Args:
+        verbose (int): Debug level for the sequence
+    """
+
+    config.verbose = verbose
 
 
 if __name__ == "__main__":

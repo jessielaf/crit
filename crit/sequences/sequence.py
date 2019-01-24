@@ -22,7 +22,6 @@ class Sequence:
         self.hosts = self.hosts or config.hosts
 
         for executor in self.executors:
-            executor.sequence = self
             executor.execute()
 
         for name, channel in config.channels.items():

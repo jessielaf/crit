@@ -7,6 +7,7 @@ Submodules
 .. toctree::
 
    crit.sequences.sequence
+   crit.sequences.vault
 
 Module contents
 ---------------

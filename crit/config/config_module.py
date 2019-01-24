@@ -20,6 +20,8 @@ class Config(object):
     tags: List[str] = []
     skip_tags: List[str] = []
     registry: list = {}
+    verbose: int = 0
+    sequence: 'crit.sequence.Sequence' = {}
 
     def __getattr__(self, name):
         """

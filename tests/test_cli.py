@@ -2,11 +2,11 @@ import unittest
 import os
 from unittest import mock
 from unittest.mock import Mock
-
 from crit.commands import cli
 from crit.config import Localhost, config
 from crit.exceptions import NoSequenceException, HostNotFoundException, WrongExtraVarsFormatException
 from tests.helpers.config import hosts
+from tests.helpers.test import sequence
 
 
 work_dir = os.path.dirname(os.path.abspath(__file__))
@@ -133,8 +133,10 @@ class SequenceFileTests(unittest.TestCase):
         execute_function = Mock()
         executor_mock.return_value.execute = execute_function
 
+        self.assertFalse(config.sequence)
         cli.run_sequence(os.path.join(get_helper_directory(), 'test.py'))
         execute_function.assert_called_with()
+        self.assertTrue(config.sequence)
 
     def test_no_sequence_variable(self):
         """
@@ -189,6 +191,13 @@ class AddExtraVarsTests(unittest.TestCase):
 
     def tearDown(self):
         config.registry = {}
+
+
+class TestSetVerbose(unittest.TestCase):
+    def test_set_verbose(self):
+        cli.set_verbose(3)
+        self.assertEqual(3, config.verbose)
+
 
 if __name__ == '__main__':
     unittest.main()

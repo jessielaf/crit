@@ -74,6 +74,7 @@ The **first parameter** is the path to the **sequence script** but crit also has
 | `-t`  | `--tags`   | ''      | Comma separated string with the tags which filters which executors will run | `tag1,tag2` |
 | `-st` | `--skip-tags` | '' | Comma separated string with the tags the sequence will skip | `tag3,tag4` |
 | `-e` | `--extra-vars` | '' | Key value based variable that will be inserted into the registry | `'key=value key2=value2'` |
+| `-v` | `--verbose` | 0 | Declares the debug level based on how many v's are given | `-v` or `-vv` or `-vvv` ect. |
 
 ## Executors
 
@@ -90,6 +91,8 @@ Crit comes with some default executors
 | `BaseExecutor`     | The base executor where all the other executors are build on | [link](https://crit.readthedocs.io/en/latest/crit.executors.base_executor.html)        |
 | `CommandExecutor`  | Executes a command on a server                               | [link](https://crit.readthedocs.io/en/latest/crit.executors.command_executor.html)        |
 | `TemplateExecutor` | Creates a file on the host based on a template               | [link](https://crit.readthedocs.io/en/latest/crit.executors.template_executor.html)        |
+| `AptExecutor` | Installs package via apt-get              | [link](https://crit.readthedocs.io/en/latest/crit.executors.apt_executor.html)        |
+| `EnvExecutor` | Add a environment variable               | [link](https://crit.readthedocs.io/en/latest/crit.executors.env_executor.html)        |
 
 > All executors can be found in the namespace `crit.executors`
 
@@ -123,7 +126,7 @@ class CommandExecutor(BaseExecutor):
 
 As mentioned above the config of crit is loaded from a python file. But that is not the only config that crit handles.
 
-Crit supplies a config module that has one especially interesting attribute. This is the **registry** attribute. This attribute is a dict that contains variables that can be used for conditionals in your executor!
+Crit supplies a config module that has one especially interesting attribute. This is the **registry** attribute. This attribute is a dict that contains variables that can be used for conditionals in your executor! Each host has it's own registry. So you could access the localhost registry like this `config.registry(repr(Localhost())['registry_key']`
 
 You can import the config via `from crit.config import config`
 

@@ -37,7 +37,7 @@ class TemplateExecutor(BaseExecutor):
                 registry=config.registry,
                 hosts=config.hosts,
                 all_hosts=config.all_hosts,
-                sequence=self.sequence,
+                sequence=config.sequence,
                 current_host=host
             )
 
