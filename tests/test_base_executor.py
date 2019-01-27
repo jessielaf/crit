@@ -117,8 +117,10 @@ class OutputToTableTest(unittest.TestCase):
     Tests if the output of the command is parsed correctly to display in cli
     """
 
+    host = Localhost()
+
     def test_output_to_table_success(self):
-        self.assertEqual('SUCCESS', get_executor().output_to_table(Localhost(), Result('value', ['Test output'], True)))
+        self.assertEqual('SUCCESS', get_executor().output_to_table(self.host, Result('value', ['Test output'], True)))
 
     def test_output_to_table_changed(self):
         executor = get_executor()
@@ -126,10 +128,24 @@ class OutputToTableTest(unittest.TestCase):
         changed_function.return_value = True
         executor.changed = changed_function
 
-        self.assertEqual('CHANGED', executor.output_to_table(Localhost(), Result('value', ['Test output'], True)))
+        self.assertEqual('CHANGED', executor.output_to_table(self.host, Result('value', ['Test output'], True)))
 
     def test_output_to_table_fail(self):
-        self.assertEqual('FAIL', get_executor().output_to_table(Localhost(), Result('value', ['Test output'], False)))
+        self.assertEqual('FAIL', get_executor().output_to_table(self.host, Result('value', ['Test output'], False)))
+
+    def test_output_to_table_warning(self):
+        """
+        Tests if the error contains warning. This means that it was warning not a error
+        """
+
+        self.assertEqual('SUCCESS', get_executor().output_to_table(self.host, Result('value', ['Test warning'], False)))
+
+    def test_output_to_table_error(self):
+        """
+        Tests if the error contains warning. This means that it was warning not a error
+        """
+
+        self.assertEqual('FAIL', get_executor().output_to_table(self.host, Result('value', ['Test warning error'], False)))
 
     @classmethod
     def setUpClass(cls):
@@ -139,8 +155,19 @@ class OutputToTableTest(unittest.TestCase):
 
         builtins.print = cls.overwrite_print
 
+    def setUp(self):
+        config.all_hosts.append(self.host)
+
     def overwrite_print(self, *args, **kwargs):
         pass
+
+
+class IsStatusTest(unittest.TestCase):
+    def is_status_true(self):
+        self.assertTrue(get_executor().is_status(['test error'], 'error'))
+
+    def is_status_false(self):
+        self.assertTrue(get_executor().is_status(['test error'], 'warning'))
 
 
 class RegisterResultTest(unittest.TestCase):

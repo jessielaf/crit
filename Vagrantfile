@@ -8,7 +8,7 @@ Vagrant.configure("2") do |config|
       slave.vm.network "private_network", ip: "192.168.200.10#{i}"
 
       slave.vm.provider "virtualbox" do |v|
-        v.memory = 128
+        v.memory = 256
       end
 
       slave.vm.provision "shell" do |s|

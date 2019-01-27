@@ -44,7 +44,7 @@ class AptExecutor(BaseExecutor):
         """
 
         # Add frontend check https://askubuntu.com/questions/506158/unable-to-initialize-frontend-dialog-when-using-ssh
-        command = 'DEBIAN_FRONTEND="noninteractive" apt-get -y ' + self.action_to_call[self.action].command + ' ' + self.package
+        command = f'DEBIAN_FRONTEND="noninteractive" apt-get -y {self.action_to_call[self.action].command} {self.package}'
 
         return command
 

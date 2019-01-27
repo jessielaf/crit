@@ -112,8 +112,6 @@ class BaseExecutor(metaclass=ABCMeta):
         error = stderr.read().decode().split('\n')
 
         if error != ['']:
-            # Delete host from the hosts to pick from
-            config.all_hosts.remove(host)
             return Result(command, error, False)
 
         return Result(command, stdout.read().decode().split('\n'), True)
@@ -127,7 +125,10 @@ class BaseExecutor(metaclass=ABCMeta):
             result (Result): The result of the command ran
         """
 
-        if result.success:
+        # Checks if the output is a warning and not a error
+        is_warning = self.is_status(result.stdout, 'warning') and not self.is_status(result.stdout, 'error')
+
+        if result.success or is_warning:
             if self.changed(result.stdout):
                 color = 'yellow'
                 status_text = 'CHANGED'
@@ -135,22 +136,36 @@ class BaseExecutor(metaclass=ABCMeta):
                 color = 'green'
                 status_text = 'SUCCESS'
         else:
+            # Delete host from the hosts to pick from
+            config.all_hosts.remove(host)
+
             self.output = True
             color = 'red'
             status_text = 'FAIL'
 
         if config.verbose > 0:
-            print(colored('Command: ', 'white', attrs=['bold']) + result.stdin)
+            self.print_line('Command', result.stdin)
 
-        print(colored('Host: ', 'white', attrs=['bold']) + colored(host, color))
-        print(colored('Status: ', attrs=['bold']) + colored(status_text, color))
+        self.print_line('Host', host, color)
+        self.print_line('Status', status_text, color)
 
         if self.output:
-            print(colored('Output: ', attrs=['bold']) + str(result.stdout))
+            self.print_line('Output', result.stdout)
 
         print('-' * self.term_width)
 
         return status_text
+
+    def print_line(self, key: str, value, color: str=None):
+        """
+        Prints the line for the key and value
+
+        Args:
+            key (str): The key for the table
+            value: The value of the table
+            color (str): The color of the output text
+        """
+        print(colored(f'{key}: ', attrs=['bold']) + colored(str(value), color))
 
     def changed(self, text: List[str]) -> bool:
         """
@@ -164,6 +179,24 @@ class BaseExecutor(metaclass=ABCMeta):
         """
 
         return False
+
+    def is_status(self, text: List[str], status: str):
+        """
+
+        Args:
+            text (List[str]): The text in which the status should be
+            status (str): Which string should be in de output
+
+        Returns:
+            If the status is in the text
+        """
+
+        for output in text:
+            if status in output.lower():
+                return True
+
+        return False
+
 
     def register_result(self, host: Host, result: Result):
         host_name = repr(host)
