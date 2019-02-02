@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import paramiko
 from termcolor import colored
 from crit.config import Host, config
-from .result import Result
+from .result import Result, Status
 
 
 @dataclass
@@ -26,11 +26,11 @@ class BaseExecutor(metaclass=ABCMeta):
         never_fail (bool): An executor that does not fail based on the output of the executor. Correlates to get_pty of exec_command paramiko
 
     Attributes:
-        term_width (int): Width of the terminal
+        host (Host): The host on which the executor is running
     """
 
     # Args
-    hosts: Union[Host, List[Host]] = None
+    hosts: List[Host] = None
     name: str = None
     tags: List[str] = None
     sudo: bool = False
@@ -41,10 +41,10 @@ class BaseExecutor(metaclass=ABCMeta):
     never_fail: bool = False
 
     # Attributes
-    term_width = shutil.get_terminal_size((80, 20)).columns - 1
+    host = None
 
     @abstractmethod
-    def commands(self, host: Host) -> str:
+    def commands(self) -> str:
         """
         The commands that will be executed
 
@@ -54,44 +54,35 @@ class BaseExecutor(metaclass=ABCMeta):
 
         pass
 
-    def execute(self):
-        """
-        Execute the commands and prints the table with the output of the executor
-        """
-
-        self.print_title()
-
-        if not self.can_run_tags():
-            print(colored('Skipping based on tags', 'cyan'))
-            return
-
-        hosts = self.hosts or config.sequence.hosts
-
-        if isinstance(hosts, Host):
-            self.execute_on_host(hosts)
-        elif isinstance(hosts, List):
-            for host in hosts:
-               self.execute_on_host(host)
-
-    def execute_on_host(self, host: Host):
+    def execute(self, host: Host) -> Result:
         """
         Executes the command on the host and runs the nested executors if needed
 
         Args:
-            host: The host on which the executor can run
+            host (Host): The host on which the executor can run
         """
 
+        if host not in config.hosts:
+            return Result(Status.SKIPPING, message='Host is not in global config or passed as argument')
+
+        if not self.can_run_tags():
+            return Result(Status.SKIPPING, message='Skipping based on tags for this host')
+
         # Check if the host in in available hosts
-        if host in config.all_hosts:
-            result = self.run_command(host)
-            self.register_result(host, result)
-            status = self.output_to_table(host, result)
+        if self.hosts:
+            if host in self.hosts:
+                self.host = host
+            else:
+                return Result(Status.SKIPPING, message='Host not in executor\'s host')
+        else:
+            self.host = host
 
-            if status == self.status_nested_executors and self.executors:
-                for executor in self.executors:
-                    executor.execute_on_host(host)
+        result = self.run_command()
+        self.register_result(result)
 
-    def run_command(self, host: Host) -> Result:
+        return result
+
+    def run_command(self) -> Result:
         """
         Runs a command on a specific host
 
@@ -102,77 +93,52 @@ class BaseExecutor(metaclass=ABCMeta):
              returns the list with the output and if the output was successful or an error
         """
 
-        command = self.commands(host)
+        command = self.commands()
 
         if self.sudo:
             command = 'sudo ' + command
 
-        stdin, stdout, stderr = self.get_client(host).exec_command(command, get_pty=self.never_fail)
+        stdin, stdout, stderr = self.get_client().exec_command(command, get_pty=self.never_fail)
 
         error = stderr.read().decode().split('\n')
 
-        if error != ['']:
-            return Result(command, error, False)
+        if error != [''] and not self.is_warning(error):
+            # Checks if the error is just a warning or an actual error
+            return Result(Status.FAIL, stdin=command, stdout=error)
 
-        return Result(command, stdout.read().decode().split('\n'), True)
+        output = stdout.read().decode().split('\n')
 
-    def output_to_table(self, host: Host, result: Result) -> str:
+        return Result(Status.CHANGED if self.is_changed(output) else Status.SUCCESS, stdin=command, stdout=output, output=self.output)
+
+    def is_warning(self, output: List[str]) -> bool:
         """
-        Prints the output of a command to the terminal in a table format
+        Checks if the output contains warning. If it contains warning and it does NOT contain error or fail the error message is considered a warning
 
         Args:
-            host (Host): The host on which the command is ran with
-            result (Result): The result of the command ran
+            output (List[str]): The output of the command
+
+        Returns:
+            If the error page is a warning
         """
 
-        # Checks if the output is a warning and not a error
-        is_warning = self.is_status(result.stdout, 'warning') and not self.is_status(result.stdout, 'error')
+        has_warning = False
 
-        if result.success or is_warning:
-            if self.changed(result.stdout):
-                color = 'yellow'
-                status_text = 'CHANGED'
-            else:
-                color = 'green'
-                status_text = 'SUCCESS'
-        else:
-            # Delete host from the hosts to pick from
-            config.all_hosts.remove(host)
+        for line in output:
+            lower_line = line.lower()
 
-            self.output = True
-            color = 'red'
-            status_text = 'FAIL'
+            if 'error' in lower_line or 'fail' in lower_line:
+                return False
+            elif 'warning' in lower_line:
+                has_warning = True
 
-        if config.verbose > 0:
-            self.print_line('Command', result.stdin)
+        return has_warning
 
-        self.print_line('Host', host, color)
-        self.print_line('Status', status_text, color)
-
-        if self.output:
-            self.print_line('Output', result.stdout)
-
-        print('-' * self.term_width)
-
-        return status_text
-
-    def print_line(self, key: str, value, color: str=None):
-        """
-        Prints the line for the key and value
-
-        Args:
-            key (str): The key for the table
-            value: The value of the table
-            color (str): The color of the output text
-        """
-        print(colored(f'{key}: ', attrs=['bold']) + colored(str(value), color))
-
-    def changed(self, text: List[str]) -> bool:
+    def is_changed(self, output: List[str]) -> bool:
         """
         Checks if the success text means that the status is changed. This function can be overwritten for custom executors
 
         Args:
-            text (List[str]): A list of strings of the successfull output splitted on \n
+            output (List[str]): A list of strings of the successfull output splitted on \n
 
         Returns:
             Boolean that indicated if the item has been changed or not. Defaults to :obj:`False`
@@ -180,71 +146,35 @@ class BaseExecutor(metaclass=ABCMeta):
 
         return False
 
-    def is_status(self, text: List[str], status: str):
-        """
-
-        Args:
-            text (List[str]): The text in which the status should be
-            status (str): Which string should be in de output
-
-        Returns:
-            If the status is in the text
-        """
-
-        for output in text:
-            if status in output.lower():
-                return True
-
-        return False
-
-
-    def register_result(self, host: Host, result: Result):
-        host_name = repr(host)
+    def register_result(self, result: Result):
+        host_name = repr(self.host)
 
         if host_name not in config.registry:
             config.registry[host_name] = {}
 
         config.registry[host_name][self.register] = result
 
-
-    @staticmethod
-    def get_client(host: Host) -> paramiko.SSHClient:
+    def get_client(self) -> paramiko.SSHClient:
         """
         Get paramiko client for the host
-
-        Args:
-            host (Host): The host for which the client should be returned
 
         Returns:
             Client which can run the commands
         """
 
-        if host.url in config.channels:
-            return config.channels[host.url]
+        if self.host.url in config.channels:
+            return config.channels[self.host.url]
         else:
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.load_system_host_keys()
-            client.connect(hostname=host.url, username=host.ssh_user, password=host.ssh_password,
-                           pkey=paramiko.RSAKey.from_private_key_file(os.path.expanduser(host.ssh_identity_file)),
+            client.connect(hostname=self.host.url, username=self.host.ssh_user, password=self.host.ssh_password,
+                           pkey=paramiko.RSAKey.from_private_key_file(os.path.expanduser(self.host.ssh_identity_file)),
                            allow_agent=False, look_for_keys=False)
 
-            config.channels[host.url] = client
+            config.channels[self.host.url] = client
 
             return client
-
-    def print_title(self):
-        """
-        Prints the title of the executor in the commandline
-        """
-
-        if len(config.all_hosts) != 0:
-            line = '=' * self.term_width
-
-            print('\n')
-            print(line)
-            print(colored(self.name or self.__class__.__name__, attrs=['bold']))
-            print(line)
 
     def can_run_tags(self) -> bool:
         """

@@ -39,7 +39,7 @@ def add_config(config: str):
         config))).load_module()
 
     if hasattr(config_object, 'hosts'):
-        config_module.all_hosts = config_object.hosts
+        config_module.all_hosts = config_object.hosts + [Localhost()]
     else:
         raise ConfigHasNoHostsException
 

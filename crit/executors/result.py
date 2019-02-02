@@ -1,9 +1,65 @@
+import shutil
+from enum import Enum, unique
 from typing import List
 from dataclasses import dataclass
+from termcolor import colored
+from crit.config import Host, config
+
+
+@unique
+class Status(Enum):
+    SKIPPING = 'cyan'
+    FAIL = 'red'
+    SUCCESS = 'green'
+    CHANGED = 'yellow'
 
 
 @dataclass
 class Result:
-    stdin: str
-    stdout: List[str]
-    success: bool
+    status: Status
+    stdin: str = ''
+    stdout: List[str] = None
+    message: str = ''
+    output: bool = False
+
+    def to_table(self, host: Host):
+        """
+        Prints the output of a command to the terminal in a table format
+
+        Args:
+            host (Host): The host on which the command is ran with
+            result (Result): The result of the command ran
+        """
+
+        term_width = shutil.get_terminal_size((80, 20)).columns - 1
+
+        if self.status == Status.FAIL:
+            # Delete host from the hosts to pick from
+            config.hosts.remove(host)
+            self.output = True
+
+        if config.verbose > 0:
+            self.print_line('Command', self.stdin)
+
+        self.print_line('Host', host, self.status.value)
+        self.print_line('Status', self.status, self.status.value)
+
+        if self.status == Status.SKIPPING:
+            self.print_line('Message', self.message)
+
+        if self.output:
+            self.print_line('Output', self.stdout)
+
+        print('-' * term_width)
+
+    def print_line(self, key: str, value, color: str=None):
+        """
+        Prints the line for the key and value
+
+        Args:
+            key (str): The key for the table
+            value: The value of the table
+            color (str): The color of the output text
+        """
+
+        print(colored(f'{key}: ', attrs=['bold']) + colored(str(value), color))

@@ -23,21 +23,7 @@ class Config(object):
     verbose: int = 0
     sequence: 'crit.sequence.Sequence' = {}
 
-    def __getattr__(self, name):
-        """
-        Override getattr method so the getattr function will be ran on the private class
-        """
-
-        try:
-            return self.__getattribute__(name)
-        except AttributeError:
-            return self.__getattribute__('run')[name]
-
-    def __setattr__(self, name, value):
-        if hasattr(self, name):
-            super().__setattr__(name, value)
-        else:
-            self.run[name] = value
-
+    def get_registered(self, host: Host, item: str):
+        return self.registry[repr(host)][item]
 
 config = Config()

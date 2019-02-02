@@ -6,7 +6,6 @@ from crit.commands import cli
 from crit.config import Localhost, config
 from crit.exceptions import NoSequenceException, HostNotFoundException, WrongExtraVarsFormatException
 from tests.helpers.config import hosts
-from tests.helpers.test import sequence
 
 
 work_dir = os.path.dirname(os.path.abspath(__file__))
@@ -39,7 +38,7 @@ class AddConfigTests(unittest.TestCase):
         """
 
         cli.add_config(get_config_file())
-        self.assertEqual(hosts, config.all_hosts)
+        self.assertEqual(hosts + [Localhost()], config.all_hosts)
 
     def test_specified_config_wrong(self):
         """
@@ -57,7 +56,7 @@ class AddConfigTests(unittest.TestCase):
 
         os.chdir(get_helper_directory())
         cli.add_config('config.py')
-        self.assertEqual(hosts, config.all_hosts)
+        self.assertEqual(hosts + [Localhost()], config.all_hosts)
         os.chdir(work_dir)
 
     def test_work_directory_config_wrong(self):
@@ -81,7 +80,7 @@ class AddHostsTests(unittest.TestCase):
         """
 
         cli.add_hosts('all')
-        self.assertEqual(hosts, config.hosts)
+        self.assertEqual(hosts + [Localhost()], config.hosts)
 
     def test_localhost(self):
         """
@@ -124,18 +123,21 @@ class AddHostsTests(unittest.TestCase):
 
 
 class SequenceFileTests(unittest.TestCase):
-    @mock.patch('crit.executors.CommandExecutor')
-    def test_sequence_run(self, executor_mock):
+    @mock.patch('crit.sequences.Sequence')
+    def test_sequence_run(self, sequence_mock):
         """
         Test if the sequence runs correctly when everything is given properly
         """
 
-        execute_function = Mock()
-        executor_mock.return_value.execute = execute_function
+        config.hosts = [Localhost()]
+
+        run_function = Mock()
+        sequence_mock.return_value.run = run_function
 
         self.assertFalse(config.sequence)
         cli.run_sequence(os.path.join(get_helper_directory(), 'test.py'))
-        execute_function.assert_called_with()
+
+        run_function.assert_called_with()
         self.assertTrue(config.sequence)
 
     def test_no_sequence_variable(self):
