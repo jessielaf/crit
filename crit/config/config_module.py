@@ -1,6 +1,7 @@
 from typing import List, Dict
 from paramiko import SSHClient
 from crit.config import Host
+from crit.config.general_config import GeneralConfig
 
 
 class Config(object):
@@ -15,7 +16,7 @@ class Config(object):
     """
 
     hosts: List[Host] = []
-    all_hosts: List[Host] = []
+    general_config: GeneralConfig = None
     channels: Dict[str, SSHClient] = {}
     tags: List[str] = []
     skip_tags: List[str] = []
@@ -25,5 +26,6 @@ class Config(object):
 
     def get_registered(self, host: Host, item: str):
         return self.registry[repr(host)][item]
+
 
 config = Config()

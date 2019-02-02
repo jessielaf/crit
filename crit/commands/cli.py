@@ -3,7 +3,7 @@ from typing import Union, List
 
 import click
 from importlib.machinery import SourceFileLoader
-from crit.exceptions import ConfigHasNoHostsException, NoSequenceException, WrongExtraVarsFormatException
+from crit.exceptions import ConfigNotInFileException, NoSequenceException, WrongExtraVarsFormatException
 from crit.config import Localhost, config as config_module, config
 from crit.utils import get_host_by_name
 
@@ -38,10 +38,11 @@ def add_config(config: str):
     config_object = SourceFileLoader("ConfigFile", os.path.join(os.getcwd(), os.path.normpath(
         config))).load_module()
 
-    if hasattr(config_object, 'hosts'):
-        config_module.all_hosts = config_object.hosts + [Localhost()]
+    if hasattr(config_object, 'config'):
+        config_module.general_config = config_object.config
+        config_module.general_config.hosts.append(Localhost())
     else:
-        raise ConfigHasNoHostsException
+        raise ConfigNotInFileException
 
 
 def add_hosts(hosts: Union[str, List[str]]):
@@ -53,7 +54,7 @@ def add_hosts(hosts: Union[str, List[str]]):
     """
 
     if hosts == 'all':
-        config_module.hosts = config_module.all_hosts
+        config_module.hosts = config_module.general_config.hosts
     else:
         for host in hosts.split(','):
             if hosts == 'localhost' or hosts == '127.0.0.1':

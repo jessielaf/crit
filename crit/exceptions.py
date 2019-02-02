@@ -1,4 +1,4 @@
-class ConfigHasNoHostsException(Exception):
+class ConfigNotInFileException(Exception):
     """
     This exception is thrown when the config file does not have a variable host
     """

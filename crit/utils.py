@@ -13,7 +13,7 @@ def get_host_by_name(url: str) -> Host:
         Host: host that matches with the url
     """
 
-    host = [host for host in config.all_hosts if host.url == url]
+    host = [host for host in config.general_config.hosts if host.url == url]
 
     if len(host) >= 2:
         raise MoreHostsWithSameUrlException

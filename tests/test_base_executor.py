@@ -5,7 +5,7 @@ from unittest.mock import patch, Mock
 from crit.config import Localhost, config
 from crit.executors import BaseExecutor, Result
 from crit.executors.result import Status
-from example.config import hosts
+from example.config import config as general_config
 
 
 @patch.multiple(BaseExecutor, __abstractmethods__=set())
@@ -29,7 +29,7 @@ class ExecuteOnHostTest(unittest.TestCase):
 
     def test_execute_wrong_host(self):
         self.mock_executor()
-        result = self.executor.execute(hosts[0])
+        result = self.executor.execute(general_config.hosts[0])
 
         self.assertEqual(result, Result(Status.SKIPPING, message='Host is not in global config or passed as argument'))
 
@@ -46,7 +46,7 @@ class ExecuteOnHostTest(unittest.TestCase):
         self.assertEqual(result, Result(Status.SKIPPING, message='Skipping based on tags for this host'))
 
     def test_execute_host_not_in_executor(self):
-        self.mock_executor(hosts=[hosts[0]])
+        self.mock_executor(hosts=[general_config.hosts[0]])
 
         result = self.executor.execute(self.host)
 

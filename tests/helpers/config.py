@@ -1,7 +1,9 @@
-from crit.config import Host
+from crit.config import Host, GeneralConfig
 
-hosts = [
-    Host('192.168.200.101', ssh_user='vagrant'),
-    Host('192.168.200.102', ssh_user='vagrant'),
-    Host('192.168.200.103', ssh_user='vagrant'),
-]
+config = GeneralConfig(
+    hosts=[
+        Host('192.168.200.101', ssh_user='vagrant'),
+        Host('192.168.200.102', ssh_user='vagrant'),
+        Host('192.168.200.103', ssh_user='vagrant'),
+    ]
+)

@@ -5,7 +5,7 @@ from unittest.mock import Mock
 from crit.commands import cli
 from crit.config import Localhost, config
 from crit.exceptions import NoSequenceException, HostNotFoundException, WrongExtraVarsFormatException
-from tests.helpers.config import hosts
+from tests.helpers.config import config as general_config
 
 
 work_dir = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +38,7 @@ class AddConfigTests(unittest.TestCase):
         """
 
         cli.add_config(get_config_file())
-        self.assertEqual(hosts + [Localhost()], config.all_hosts)
+        self.assertEqual(general_config.hosts + [Localhost()], config.general_config.hosts)
 
     def test_specified_config_wrong(self):
         """
@@ -56,7 +56,7 @@ class AddConfigTests(unittest.TestCase):
 
         os.chdir(get_helper_directory())
         cli.add_config('config.py')
-        self.assertEqual(hosts + [Localhost()], config.all_hosts)
+        self.assertEqual(general_config.hosts + [Localhost()], config.general_config.hosts)
         os.chdir(work_dir)
 
     def test_work_directory_config_wrong(self):
@@ -80,7 +80,7 @@ class AddHostsTests(unittest.TestCase):
         """
 
         cli.add_hosts('all')
-        self.assertEqual(hosts + [Localhost()], config.hosts)
+        self.assertEqual(general_config.hosts + [Localhost()], config.hosts)
 
     def test_localhost(self):
         """
@@ -95,16 +95,16 @@ class AddHostsTests(unittest.TestCase):
         Test if given a specific url
         """
 
-        cli.add_hosts(hosts[0].url)
-        self.assertEqual([hosts[0]], config.hosts)
+        cli.add_hosts(general_config.hosts[0].url)
+        self.assertEqual([general_config.hosts[0]], config.hosts)
 
     def test_two_specific_host(self):
         """
         Test if given two specific urls
         """
 
-        cli.add_hosts(hosts[0].url + ',' + hosts[1].url)
-        self.assertEqual([hosts[0], hosts[1]], config.hosts)
+        cli.add_hosts(general_config.hosts[0].url + ',' + general_config.hosts[1].url)
+        self.assertEqual([general_config.hosts[0], general_config.hosts[1]], config.hosts)
 
     def test_wrong_url(self):
         """

@@ -29,13 +29,15 @@ You need two files to start using crit.
 The config file contains all the config for crit. This is an example of this config file:
 
 ```python3
-from crit.config.host import Host
+from crit.config import Host, GeneralConfig
 
 server1 = Host(url='192.168.200.101', ssh_user='vagrant')
 
-hosts = [
-      server1
-]
+config = GeneralConfig(
+    hosts=[
+        server1
+    ]
+)
 ```
 
 - hosts: This variable contains all the hosts you may use for your crit application
