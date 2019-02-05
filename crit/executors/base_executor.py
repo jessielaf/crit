@@ -1,10 +1,11 @@
 import os
-import shutil
-from typing import Union, List, Tuple
+import time
+from typing import List, Dict
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 import paramiko
-from termcolor import colored
+from paramiko import ChannelFile
+
 from crit.config import Host, config
 from .result import Result, Status
 
@@ -21,9 +22,10 @@ class BaseExecutor(metaclass=ABCMeta):
         sudo (bool): Add sudo before the command. Defaults to :obj:`False`
         output (str): Output the stdout from the executor. Defaults to :obj:`False`
         register (str): Registers the output of the executor to the register. :obj:`optional`
-        status_nested_executors (str): Defines if the exeutor will run the nested executors. You can choose from :obj:`SUCCESS`, :obj:`CHANGED` & :obj:`FAIL`. Defaults to :obj:`SUCCESS`
+        status_nested_executors (Status): Defines if the exeutor will run the nested executors. Defaults to :obj:`Status.CHANGED`
         executors (List[BaseExecutor]): The executors to run when status of the executor aligns with :obj:`status_nested_executors`. :obj:`optional`
         never_fail (bool): An executor that does not fail based on the output of the executor. Correlates to get_pty of exec_command paramiko
+        env (Dict[str, str]): Add the env variables to the command. :obj:`optional`
 
     Attributes:
         host (Host): The host on which the executor is running
@@ -35,10 +37,11 @@ class BaseExecutor(metaclass=ABCMeta):
     tags: List[str] = None
     sudo: bool = False
     output: bool = False
-    status_nested_executors: str = 'SUCCESS'
+    status_nested_executors: Status = Status.CHANGED
     executors: List['BaseExecutor'] = None
     register: str = None
     never_fail: bool = False
+    env: Dict[str, str] = None
 
     # Attributes
     host = None
@@ -95,43 +98,76 @@ class BaseExecutor(metaclass=ABCMeta):
 
         command = self.commands()
 
+        if self.env:
+            for key, value in self.env.items():
+                command = f'${key}="${value}" ' + command
+
         if self.sudo:
             command = 'sudo ' + command
 
-        stdin, stdout, stderr = self.get_client().exec_command(command, get_pty=self.never_fail)
+        client = self.get_client()
+        stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+
+        password_correct = self.read_prompts(stdin, stdout)
+
+        if not password_correct:
+            return Result(Status.FAIL, message='Incorrect linux password!')
 
         error = stderr.read().decode().split('\n')
-
-        if error != [''] and not self.is_warning(error):
-            # Checks if the error is just a warning or an actual error
-            return Result(Status.FAIL, stdin=command, stdout=error)
-
         output = stdout.read().decode().split('\n')
+
+        if error != ['']:
+            error_in_text = self.error_in_text(error)
+            catched_error = self.catched_error(error)
+
+            if (error_in_text or not catched_error) or (not catched_error and not error_in_text):
+                # Checks if the error is just a warning or an actual error
+                return Result(Status.FAIL, stdin=command, stdout=error)
+            else:
+                output = error
 
         return Result(Status.CHANGED if self.is_changed(output) else Status.SUCCESS, stdin=command, stdout=output, output=self.output)
 
-    def is_warning(self, output: List[str]) -> bool:
+    def error_in_text(self, output: List[str]) -> bool:
         """
-        Checks if the output contains warning. If it contains warning and it does NOT contain error or fail the error message is considered a warning
+        Checks if error or fail is in the error output
 
         Args:
             output (List[str]): The output of the command
 
         Returns:
-            If the error page is a warning
+            if error or fail is in the output
         """
-
-        has_warning = False
 
         for line in output:
             lower_line = line.lower()
 
             if 'error' in lower_line or 'fail' in lower_line:
-                return False
-            elif 'warning' in lower_line:
-                has_warning = True
+                return True
 
-        return has_warning
+        return False
+
+    def catched_error(self, output: List[str]) -> bool:
+        """
+        If fail or error is not in the text return this. in default it returns True if warning is in the text
+
+        Args:
+            output (List[str]): The output of the command
+
+        Returns:
+            If the error is catched
+        """
+
+        for line in output:
+            lower_line = line.lower()
+
+            if 'warning' in lower_line:
+                return True
+
+        return False
+
+    def post_executors(self, result: Result) -> List['BaseExecutor']:
+        return []
 
     def is_changed(self, output: List[str]) -> bool:
         """
@@ -146,7 +182,43 @@ class BaseExecutor(metaclass=ABCMeta):
 
         return False
 
+    def read_prompts(self, stdin, stdout: ChannelFile):
+        """
+        Here you can read prompts see https://stackoverflow.com/questions/373639/running-interactive-commands-in-paramiko how to
+
+        Args:
+            stdin: The stdin of the command
+            stdout: The output of the task
+
+        Returns:
+            stdin and out
+        """
+
+        if self.sudo and config.linux_password:
+            time.sleep(0.1)
+
+            stdin.write(config.linux_password + '\n')
+            stdin.flush()
+
+            # Read the password
+            stdout.readline()
+            stdout.readline()
+
+            if 'Sorry, try again.' in stdout.readline():
+                stdin.write(chr(3))
+                stdin.flush()
+                return False
+
+            return True
+
     def register_result(self, result: Result):
+        """
+        Registers the result to the registry based on the host
+
+        Args:
+            result (Result): The result of the command
+        """
+
         host_name = repr(self.host)
 
         if host_name not in config.registry:

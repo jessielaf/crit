@@ -12,8 +12,9 @@ class TestTemplateExecutor(unittest.TestCase):
             dest='test'
         )
         executor.sequence = Sequence(executors=[])
+        executor.host = Localhost()
 
-        self.assertEqual(executor.commands(Localhost()), 'echo test test2 localhost > test')
+        self.assertEqual(executor.commands(), 'echo test test2 localhost > test')
 
 
 if __name__ == '__main__':

@@ -1,3 +1,4 @@
+import getpass
 import os
 from typing import Union, List
 
@@ -16,12 +17,14 @@ from crit.utils import get_host_by_name
 @click.option('-st', '--skip-tags', default='', help='Comma separated string with the tags the sequence will skip')
 @click.option('-e', '--extra-vars', default='', help='Key value based variable that will be inserted into the registry')
 @click.option('-v', '--verbose', default=0, count=True, help='Shows the commands that are running')
-def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: str, skip_tags: str, extra_vars: str, verbose: int):
+@click.option('-p', '--linux-pass', is_flag=True, help='Crit will ask for the linux password')
+def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: str, skip_tags: str, extra_vars: str, verbose: int, linux_pass):
     add_config(config)
     add_hosts(hosts)
     add_tags_and_skip_tags(tags, skip_tags)
     add_extra_vars(extra_vars)
     set_verbose(verbose)
+    ask_linux_password(linux_pass)
 
     # Should always be the last one to run
     run_sequence(sequence_file)
@@ -118,6 +121,12 @@ def set_verbose(verbose: int):
     """
 
     config.verbose = verbose
+
+
+def ask_linux_password(linux_pass):
+    if linux_pass:
+        password = getpass.getpass(prompt='Password for the linux user: ')
+        config.linux_password = password
 
 
 if __name__ == "__main__":

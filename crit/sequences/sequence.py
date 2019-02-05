@@ -51,7 +51,7 @@ class Sequence:
                 if isinstance(executor, BaseExecutor):
                     self.print_title(executor)
                     self.run_executor(host, executor)
-                elif isinstance(executors, Callable):
+                else:
                     new_executors = executor(host)
 
                     for new_executor in new_executors:
@@ -70,6 +70,8 @@ class Sequence:
         result = executor.execute(host)
         result.to_table(host)
 
+        self.run_executors(executor.post_executors(result))
+
         if executor.executors and result.status == executor.status_nested_executors:
             self.run_executors(executor.executors)
 
@@ -78,7 +80,7 @@ class Sequence:
         Prints the title of the executor in the commandline
         """
 
-        if len(config.all_hosts) != 0:
+        if len(config.hosts) != 0:
             line = '=' * self.term_width
 
             print('\n')

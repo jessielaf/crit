@@ -1,8 +1,10 @@
 from typing import List
+
+from crit.config import Host
 from crit.executors import CommandExecutor, AptExecutor, BaseExecutor
 
 
-def get_docker_executors() -> List[BaseExecutor]:
+def get_docker_executors(host: Host) -> List[BaseExecutor]:
     """
     Installs docker on a server. Tags: :obj:`docker_install`
 
@@ -20,6 +22,9 @@ def get_docker_executors() -> List[BaseExecutor]:
         CommandExecutor(
             name='Upgrade apt-get',
             command='apt-get -y upgrade',
+            env={
+                'DEBIAN_FRONTEND': 'noninteractive'
+            },
             sudo=True,
             **default_kwargs
         )

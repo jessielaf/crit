@@ -11,7 +11,7 @@ class TestAptExecutor(unittest.TestCase):
 
         executor = AptExecutor(package='curl')
 
-        self.assertEqual('DEBIAN_FRONTEND="noninteractive" apt-get -y install curl', executor.commands(Localhost()))
+        self.assertEqual('DEBIAN_FRONTEND="noninteractive" apt-get -y install curl', executor.commands())
 
         # Right text for install
         self.assertTrue(executor.changed(['The following NEW packages will be installed:']))

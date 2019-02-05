@@ -12,5 +12,5 @@ class CommandExecutor(BaseExecutor):
     """
     command: str = None
 
-    def commands(self, host) -> str:
+    def commands(self) -> str:
         return self.command

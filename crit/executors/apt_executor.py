@@ -32,7 +32,7 @@ class AptExecutor(BaseExecutor):
         'remove': _Action('remove', 'The following packages will be REMOVED:'),
     }
 
-    def commands(self, host):
+    def commands(self):
         """
         Creates the command for the AptExecutor
 

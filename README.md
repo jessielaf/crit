@@ -78,6 +78,10 @@ The **first parameter** is the path to the **sequence script** but crit also has
 | `-e` | `--extra-vars` | '' | Key value based variable that will be inserted into the registry | `'key=value key2=value2'` |
 | `-v` | `--verbose` | 0 | Declares the debug level based on how many v's are given | `-v` or `-vv` or `-vvv` ect. |
 
+#### Verbosity
+- **1**: Prints the command ran
+- **2**: Prints the output
+
 ## Executors
 
 ### What is an executor
@@ -94,7 +98,6 @@ Crit comes with some default executors
 | `CommandExecutor`  | Executes a command on a server                               | [link](https://crit.readthedocs.io/en/latest/crit.executors.command_executor.html)        |
 | `TemplateExecutor` | Creates a file on the host based on a template               | [link](https://crit.readthedocs.io/en/latest/crit.executors.template_executor.html)        |
 | `AptExecutor` | Installs package via apt-get              | [link](https://crit.readthedocs.io/en/latest/crit.executors.apt_executor.html)        |
-| `EnvExecutor` | Add a environment variable               | [link](https://crit.readthedocs.io/en/latest/crit.executors.env_executor.html)        |
 
 > All executors can be found in the namespace `crit.executors`
 

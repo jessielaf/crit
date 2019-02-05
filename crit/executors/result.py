@@ -44,10 +44,10 @@ class Result:
         self.print_line('Host', host, self.status.value)
         self.print_line('Status', self.status, self.status.value)
 
-        if self.status == Status.SKIPPING:
+        if self.message:
             self.print_line('Message', self.message)
 
-        if self.output:
+        if self.output or config.verbose > 1:
             self.print_line('Output', self.stdout)
 
         print('-' * term_width)

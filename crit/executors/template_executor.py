@@ -25,7 +25,7 @@ class TemplateExecutor(BaseExecutor):
     src: str = ''
     dest: str = ''
 
-    def commands(self, host: Host) -> str:
+    def commands(self) -> str:
         """
         It opens the template and renders it via jinja2
         """
@@ -38,7 +38,7 @@ class TemplateExecutor(BaseExecutor):
                 hosts=config.hosts,
                 all_hosts=config.all_hosts,
                 sequence=config.sequence,
-                current_host=host
+                current_host=self.host
             )
 
             return 'echo ' + template_output + ' > ' + self.dest

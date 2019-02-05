@@ -91,6 +91,27 @@ class RunCommandTest(unittest.TestCase):
 
         self.assertEqual('sudo value', result.stdin)
 
+    @mock.patch('paramiko.SSHClient')
+    def test_execute_warning(self, client_mock):
+        self.mock_executor(client_mock, (BytesIO(b'warnings'),) * 3)
+
+        result = self.executor.run_command()
+        self.assertEqual(result.status, Status.SUCCESS)
+
+    @mock.patch('paramiko.SSHClient')
+    def test_execute_warning_error(self, client_mock):
+        self.mock_executor(client_mock, (BytesIO(b'warnings error'),) * 3)
+
+        result = self.executor.run_command()
+        self.assertEqual(result.status, Status.FAIL)
+
+    @mock.patch('paramiko.SSHClient')
+    def test_execute_error(self, client_mock):
+        self.mock_executor(client_mock, (BytesIO(b'error'),) * 3)
+
+        result = self.executor.run_command()
+        self.assertEqual(result.status, Status.FAIL)
+
     def mock_executor(self, client_mock, exec_return, **kwargs):
         # Set executor
         self.executor = get_executor(**kwargs)
@@ -107,15 +128,6 @@ class RunCommandTest(unittest.TestCase):
 
     def setUp(self):
         config.hosts = [Localhost()]
-
-
-class IsStatusTest(unittest.TestCase):
-    def is_status_true(self):
-        self.assertTrue(get_executor().is_status(['test error'], 'error'))
-
-    def is_status_false(self):
-        self.assertTrue(get_executor().is_status(['test error'], 'warning'))
-
 
 class RegisterResultTest(unittest.TestCase):
     def test_register_result(self):
