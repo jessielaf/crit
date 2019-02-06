@@ -6,8 +6,8 @@ Submodules
 
 .. toctree::
 
+   crit.sequences.docker
    crit.sequences.sequence
-   crit.sequences.vault
 
 Module contents
 ---------------

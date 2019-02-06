@@ -22,9 +22,6 @@ class BaseExecutor(metaclass=ABCMeta):
         sudo (bool): Add sudo before the command. Defaults to :obj:`False`
         output (str): Output the stdout from the executor. Defaults to :obj:`False`
         register (str): Registers the output of the executor to the register. :obj:`optional`
-        status_nested_executors (Status): Defines if the exeutor will run the nested executors. Defaults to :obj:`Status.CHANGED`
-        executors (List[BaseExecutor]): The executors to run when status of the executor aligns with :obj:`status_nested_executors`. :obj:`optional`
-        never_fail (bool): An executor that does not fail based on the output of the executor. Correlates to get_pty of exec_command paramiko
         env (Dict[str, str]): Add the env variables to the command. :obj:`optional`
 
     Attributes:
@@ -37,10 +34,7 @@ class BaseExecutor(metaclass=ABCMeta):
     tags: List[str] = None
     sudo: bool = False
     output: bool = False
-    status_nested_executors: Status = Status.CHANGED
-    executors: List['BaseExecutor'] = None
     register: str = None
-    never_fail: bool = False
     env: Dict[str, str] = None
 
     # Attributes
@@ -108,7 +102,7 @@ class BaseExecutor(metaclass=ABCMeta):
         client = self.get_client()
         stdin, stdout, stderr = client.exec_command(command, get_pty=True)
 
-        password_correct = self.read_prompts(stdin, stdout)
+        password_correct = self.fill_password(stdin, stdout)
 
         if not password_correct:
             return Result(Status.FAIL, message='Incorrect linux password!')
@@ -167,6 +161,16 @@ class BaseExecutor(metaclass=ABCMeta):
         return False
 
     def post_executors(self, result: Result) -> List['BaseExecutor']:
+        """
+        Executors that get ran right after the main executor
+
+        Args:
+            result: The result of this executor on a specific host
+
+        Returns:
+            The executors to run
+        """
+
         return []
 
     def is_changed(self, output: List[str]) -> bool:
@@ -182,7 +186,7 @@ class BaseExecutor(metaclass=ABCMeta):
 
         return False
 
-    def read_prompts(self, stdin, stdout: ChannelFile):
+    def fill_password(self, stdin, stdout: ChannelFile):
         """
         Here you can read prompts see https://stackoverflow.com/questions/373639/running-interactive-commands-in-paramiko how to
 

@@ -72,9 +72,6 @@ class Sequence:
 
         self.run_executors(executor.post_executors(result))
 
-        if executor.executors and result.status == executor.status_nested_executors:
-            self.run_executors(executor.executors)
-
     def print_title(self, executor):
         """
         Prints the title of the executor in the commandline

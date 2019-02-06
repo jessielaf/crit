@@ -11,7 +11,6 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :glob:
    :caption: About Crit
 
    install
@@ -19,7 +18,6 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :glob:
    :caption: Config
 
    crit.config.host
@@ -27,18 +25,12 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   :glob:
    :caption: Sequence
 
    crit.sequences.sequence
 
 .. toctree::
    :maxdepth: 2
-   :glob:
    :caption: Executors
 
-   crit.executors.base_executor
-   crit.executors.command_executor
-   crit.executors.template_executor
-   crit.executors.apt_executor
-   crit.executors.env_executor
+   executors

@@ -112,6 +112,14 @@ class RunCommandTest(unittest.TestCase):
         result = self.executor.run_command()
         self.assertEqual(result.status, Status.FAIL)
 
+    @mock.patch('paramiko.SSHClient')
+    def test_execute_wrong_password(self, client_mock):
+        self.mock_executor(client_mock, (BytesIO(b'output'),) * 3)
+        self.executor.fill_password.return_value = False
+
+        result = self.executor.run_command()
+        self.assertEqual(result, Result(Status.FAIL, message='Incorrect linux password!'))
+
     def mock_executor(self, client_mock, exec_return, **kwargs):
         # Set executor
         self.executor = get_executor(**kwargs)
@@ -122,12 +130,17 @@ class RunCommandTest(unittest.TestCase):
         commands_mock.return_value = 'value'
         self.executor.commands = commands_mock
 
+        fill_password = Mock()
+        fill_password.return_value = True
+        self.executor.fill_password = fill_password
+
         # Mock get_client on executor
         client_mock.return_value.exec_command.return_value = exec_return
         self.executor.get_client = client_mock
 
     def setUp(self):
         config.hosts = [Localhost()]
+
 
 class RegisterResultTest(unittest.TestCase):
     def test_register_result(self):

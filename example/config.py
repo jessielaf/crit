@@ -8,5 +8,5 @@ slave1 = Host(url='192.168.200.101', ssh_user='vagrant', name='Slave 1')
 
 config = GeneralConfig(
     hosts=[slave1],
-    vault=Client(url='localhost', token=os.environ['VAULT_TOKEN'])
+    vault=Client(url='localhost', token='token')
 )

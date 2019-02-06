@@ -29,13 +29,15 @@ You need two files to start using crit.
 The config file contains all the config for crit. This is an example of this config file:
 
 ```python3
-from crit.config.host import Host
+from crit.config import Host, GeneralConfig
 
 server1 = Host(url='192.168.200.101', ssh_user='vagrant')
 
-hosts = [
-      server1
-]
+config = GeneralConfig(
+    hosts=[
+        server1
+    ]
+)
 ```
 
 - hosts: This variable contains all the hosts you may use for your crit application
@@ -76,6 +78,10 @@ The **first parameter** is the path to the **sequence script** but crit also has
 | `-e` | `--extra-vars` | '' | Key value based variable that will be inserted into the registry | `'key=value key2=value2'` |
 | `-v` | `--verbose` | 0 | Declares the debug level based on how many v's are given | `-v` or `-vv` or `-vvv` ect. |
 
+#### Verbosity
+- **1**: Prints the command ran
+- **2**: Prints the output
+
 ## Executors
 
 ### What is an executor
@@ -89,10 +95,13 @@ Crit comes with some default executors
 | Name               | Description                                                  | Doc url |
 |--------------------|--------------------------------------------------------------|---------|
 | `BaseExecutor`     | The base executor where all the other executors are build on | [link](https://crit.readthedocs.io/en/latest/crit.executors.base_executor.html)        |
-| `CommandExecutor`  | Executes a command on a server                               | [link](https://crit.readthedocs.io/en/latest/crit.executors.command_executor.html)        |
+| `CommandExecutor`  | Executes a command on a server | [link](https://crit.readthedocs.io/en/latest/crit.executors.command_executor.html)        |
+| `AptExecutor` | Installs package via apt-get | [link](https://crit.readthedocs.io/en/latest/crit.executors.apt_executor.html)        |
+| `UserExecutor` | Creates a linux user | [link](https://crit.readthedocs.io/en/latest/crit.executors.user_executor.html)        |
+| `FileExecutor` | Creates a file or directory based on the status | [link](https://crit.readthedocs.io/en/latest/crit.executors.file_executor.html)        |
+| `DockerRunExecutor` | Run a docker container | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker_run_executor.html)        |
+| `DockerPullExecutor` | Pulls a docker image | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker_pull_executor.html)        |
 | `TemplateExecutor` | Creates a file on the host based on a template               | [link](https://crit.readthedocs.io/en/latest/crit.executors.template_executor.html)        |
-| `AptExecutor` | Installs package via apt-get              | [link](https://crit.readthedocs.io/en/latest/crit.executors.apt_executor.html)        |
-| `EnvExecutor` | Add a environment variable               | [link](https://crit.readthedocs.io/en/latest/crit.executors.env_executor.html)        |
 
 > All executors can be found in the namespace `crit.executors`
 
@@ -126,7 +135,7 @@ class CommandExecutor(BaseExecutor):
 
 As mentioned above the config of crit is loaded from a python file. But that is not the only config that crit handles.
 
-Crit supplies a config module that has one especially interesting attribute. This is the **registry** attribute. This attribute is a dict that contains variables that can be used for conditionals in your executor!
+Crit supplies a config module that has one especially interesting attribute. This is the **registry** attribute. This attribute is a dict that contains variables that can be used for conditionals in your executor! Each host has it's own registry. So you could access the localhost registry like this `config.registry(repr(Localhost())['registry_key']`
 
 You can import the config via `from crit.config import config`
 
@@ -144,9 +153,9 @@ The url to the docs are:
 
 To build the docs:
 ```
-export SPHINX_APIDOC_OPTIONS=members,show-inheritance
-sphinx-apidoc -o docs crit -f -e
-cp README.md docs/install.md
+export SPHINX_APIDOC_OPTIONS=members,show-inheritance &&
+sphinx-apidoc -o docs crit -f -e &&
+cp README.md docs/install.md &&
 sphinx-build -b html docs docs/_build
 ```
 

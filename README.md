@@ -95,9 +95,13 @@ Crit comes with some default executors
 | Name               | Description                                                  | Doc url |
 |--------------------|--------------------------------------------------------------|---------|
 | `BaseExecutor`     | The base executor where all the other executors are build on | [link](https://crit.readthedocs.io/en/latest/crit.executors.base_executor.html)        |
-| `CommandExecutor`  | Executes a command on a server                               | [link](https://crit.readthedocs.io/en/latest/crit.executors.command_executor.html)        |
+| `CommandExecutor`  | Executes a command on a server | [link](https://crit.readthedocs.io/en/latest/crit.executors.command_executor.html)        |
+| `AptExecutor` | Installs package via apt-get | [link](https://crit.readthedocs.io/en/latest/crit.executors.apt_executor.html)        |
+| `UserExecutor` | Creates a linux user | [link](https://crit.readthedocs.io/en/latest/crit.executors.user_executor.html)        |
+| `FileExecutor` | Creates a file or directory based on the status | [link](https://crit.readthedocs.io/en/latest/crit.executors.file_executor.html)        |
+| `DockerRunExecutor` | Run a docker container | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker_run_executor.html)        |
+| `DockerPullExecutor` | Pulls a docker image | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker_pull_executor.html)        |
 | `TemplateExecutor` | Creates a file on the host based on a template               | [link](https://crit.readthedocs.io/en/latest/crit.executors.template_executor.html)        |
-| `AptExecutor` | Installs package via apt-get              | [link](https://crit.readthedocs.io/en/latest/crit.executors.apt_executor.html)        |
 
 > All executors can be found in the namespace `crit.executors`
 
@@ -149,9 +153,9 @@ The url to the docs are:
 
 To build the docs:
 ```
-export SPHINX_APIDOC_OPTIONS=members,show-inheritance
-sphinx-apidoc -o docs crit -f -e
-cp README.md docs/install.md
+export SPHINX_APIDOC_OPTIONS=members,show-inheritance &&
+sphinx-apidoc -o docs crit -f -e &&
+cp README.md docs/install.md &&
 sphinx-build -b html docs docs/_build
 ```
 

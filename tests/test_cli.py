@@ -1,3 +1,4 @@
+import getpass
 import unittest
 import os
 from unittest import mock
@@ -190,7 +191,6 @@ class AddExtraVarsTests(unittest.TestCase):
         with self.assertRaises(WrongExtraVarsFormatException):
             cli.add_extra_vars('key=value key2-value2')
 
-
     def tearDown(self):
         config.registry = {}
 
@@ -199,6 +199,17 @@ class TestSetVerbose(unittest.TestCase):
     def test_set_verbose(self):
         cli.set_verbose(3)
         self.assertEqual(3, config.verbose)
+
+
+class TestLinuxPassword(unittest.TestCase):
+    def test_ask_linux_password(self):
+        getpass_mock = Mock()
+        getpass_mock.return_value = 'test'
+        getpass.getpass = getpass_mock
+
+        cli.ask_linux_password(True)
+
+        self.assertEqual('test', config.linux_password)
 
 
 if __name__ == '__main__':
