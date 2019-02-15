@@ -11,11 +11,9 @@ class TemplateExecutor(BaseExecutor):
 
     In the templates a few variables are available:
 
-    * `hosts`: The hosts that are loaded for this sequence
-    * `registry`: The registry from the config
-    * `all_hosts`: All the hosts from the config file
-    * `sequence`: The sequence that runs this executor
-    * `current_host`: The host where the command is running on
+    * `config` (Config): The hosts that are loaded for this sequence
+    * `host` (Host): The host where the command is running on
+    * `executor` (TemplateExecutor): The executor creating this template
 
     Args:
         src (str): The source of the template. Relative to the work directory. :obj:`required`
@@ -34,11 +32,9 @@ class TemplateExecutor(BaseExecutor):
             template = Template(content_file.read())
 
             template_output = template.render(
-                registry=config.registry,
-                hosts=config.hosts,
-                all_hosts=config.all_hosts,
-                sequence=config.sequence,
-                current_host=self.host
+                config=config,
+                host=self.host,
+                executor=self
             )
 
             return 'echo ' + template_output + ' > ' + self.dest

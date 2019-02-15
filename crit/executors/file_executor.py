@@ -6,6 +6,10 @@ from crit.executors import BaseExecutor
 
 
 class TypeFile(Enum):
+    """
+    Type of files that can be passed to the :obj:`FileExecutor`
+    """
+
     DIRECTORY = 'mkdir'
     FILE = 'touch'
 

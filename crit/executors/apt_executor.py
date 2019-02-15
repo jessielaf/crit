@@ -10,10 +10,10 @@ class _Action:
 @dataclass
 class AptExecutor(BaseExecutor):
     """
-    Install package using the debian package manager
+    Install package using the apt package manager
 
     Args:
-        package (str): The package to perform the action on
+        package (str): The package to perform the action on. :obj:`required`
         sudo (bool): Add sudo before the command. Defaults to :obj:`True`
         action (str): The action to perform. You can choose from :obj:`install`, :obj:`update`, :obj:`remove`, :obj:`purge`. Defaults to :obj:`install`
 

@@ -1,1 +1,1 @@
-test {{ registry.test }} {{ current_host.url }}
+test {{ config.registry.test }} {{ host.url }}

@@ -4,6 +4,10 @@ from crit.executors import BaseExecutor
 
 @dataclass
 class DockerPullExecutor(BaseExecutor):
+    """
+    WARNING NOT TESTED
+    """
+
     image: str = ''
     extra_commands: str = ''
 

@@ -12,7 +12,7 @@ class UserExecutor(BaseExecutor):
     Creates a linux user
 
     Args:
-        username (str): The username of the linux user
+        username (str): The username of the linux user. :obj:`required`
         password (str): The password of the user created via `mkpasswd -m sha-512 salt1234`. :obj:`optional`
         create_home (bool): Creates a home for the user. Defaults to :obj:`True`
         shell (str): Which shell the user uses. Defaults to :obj:`'/bin/bash'`

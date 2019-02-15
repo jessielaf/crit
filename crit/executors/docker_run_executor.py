@@ -13,7 +13,7 @@ class DockerRunExecutor(BaseExecutor):
         detached (bool): Run in detached mode. Defaults to :obj:`True`
         tty (bool): Run in tty mode. Defaults to :obj:`False`
         environment (Dict[str, str]): Env variables for the run. :obj:`optional`
-        extra_commands (str): Command added behind the normal command
+        extra_commands (str): Command added behind the normal command. :obj: `optional`
     """
 
     image: str = ''

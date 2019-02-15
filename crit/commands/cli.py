@@ -11,6 +11,7 @@ from crit.utils import get_host_by_name
 
 @click.command()
 @click.argument('sequence_file')
+@click.version_option('0.1')
 @click.option('-h', '--hosts', default='all', help='The hosts on which the sequence will run')
 @click.option('-c', '--config', default='config.py', help='The path to the config file of crit')
 @click.option('-t', '--tags', default='', help='Comma separated string with the tags which filters which executors will run')
