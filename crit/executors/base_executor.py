@@ -104,8 +104,8 @@ class BaseExecutor(metaclass=ABCMeta):
 
         password_correct = self.fill_password(stdin, stdout)
 
-        if not password_correct:
-            return Result(Status.FAIL, message='Incorrect linux password!')
+        if password_correct:
+            return password_correct
 
         error = stderr.read().decode().split('\n')
         output = stdout.read().decode().split('\n')
@@ -186,19 +186,21 @@ class BaseExecutor(metaclass=ABCMeta):
 
         return False
 
-    def fill_password(self, stdin, stdout: ChannelFile):
+    def fill_password(self, stdin: ChannelFile, stdout: ChannelFile) -> Result:
         """
         Here you can read prompts see https://stackoverflow.com/questions/373639/running-interactive-commands-in-paramiko how to
 
         Args:
-            stdin: The stdin of the command
-            stdout: The output of the task
+            stdin (ChannelFile): The stdin of the command
+            stdout (ChannelFile): The output of the task
 
         Returns:
-            stdin and out
+            Result if it fails else it returns None which means nothing went wrong
         """
+        if self.sudo and not self.host.passwordless_user:
+            if not config.linux_password:
+                return Result(Status.FAIL, message='Pass linux password with -p or pass no_sudo_password on hosts!')
 
-        if self.sudo and config.linux_password:
             time.sleep(0.1)
 
             stdin.write(config.linux_password + '\n')
@@ -211,9 +213,9 @@ class BaseExecutor(metaclass=ABCMeta):
             if 'Sorry, try again.' in stdout.readline():
                 stdin.write(chr(3))
                 stdin.flush()
-                return False
+                return Result(Status.FAIL, message='Incorrect linux password!')
 
-            return True
+        return None
 
     def register_result(self, result: Result):
         """
