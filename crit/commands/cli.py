@@ -1,5 +1,6 @@
 import getpass
 import os
+import sys
 from typing import Union, List
 
 import click
@@ -26,6 +27,7 @@ def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: st
     add_extra_vars(extra_vars)
     set_verbose(verbose)
     ask_linux_password(linux_pass)
+    add_work_dir_as_module()
 
     # Should always be the last one to run
     run_sequence(sequence_file)
@@ -44,7 +46,6 @@ def add_config(config: str):
 
     if hasattr(config_object, 'config'):
         config_module.general_config = config_object.config
-        config_module.general_config.hosts.append(Localhost())
     else:
         raise ConfigNotInFileException
 
@@ -61,10 +62,10 @@ def add_hosts(hosts: Union[str, List[str]]):
         config_module.hosts = config_module.general_config.hosts
     else:
         for host in hosts.split(','):
-            if hosts == 'localhost' or hosts == '127.0.0.1':
-                config_module.hosts.append(Localhost())
-            else:
+            if host != 'localhost' and host != '127.0.0.1':
                 config_module.hosts.append(get_host_by_name(host))
+
+    config_module.hosts.append(Localhost())
 
 
 def run_sequence(sequence_file: str):
@@ -128,6 +129,14 @@ def ask_linux_password(linux_pass):
     if linux_pass:
         password = getpass.getpass(prompt='Password for the linux user: ')
         config.linux_password = password
+
+
+def add_work_dir_as_module():
+    """
+    Add work dir to the python modules
+    """
+
+    sys.path.append(os.getcwd())
 
 
 if __name__ == "__main__":

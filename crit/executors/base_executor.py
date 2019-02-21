@@ -23,9 +23,11 @@ class BaseExecutor(metaclass=ABCMeta):
         output (str): Output the stdout from the executor. Defaults to :obj:`False`
         register (str): Registers the output of the executor to the register. :obj:`optional`
         env (Dict[str, str]): Add the env variables to the command. :obj:`optional`
+        chdir (str): Directory in which executor will go before executing its command. :obj:`optional`
 
     Attributes:
         host (Host): The host on which the executor is running
+        error_lines (List[str]): Strings that will define if a command is an error
     """
 
     # Args
@@ -36,9 +38,11 @@ class BaseExecutor(metaclass=ABCMeta):
     output: bool = False
     register: str = None
     env: Dict[str, str] = None
+    chdir: str = None
 
     # Attributes
     host = None
+    error_lines = ['fail', 'fatal', 'error', 'No such file or directory']
 
     @abstractmethod
     def commands(self) -> str:
@@ -94,10 +98,17 @@ class BaseExecutor(metaclass=ABCMeta):
 
         if self.env:
             for key, value in self.env.items():
-                command = f'${key}="${value}" ' + command
+                command = f'{key}="{value}" ' + command
 
         if self.sudo:
             command = 'sudo ' + command
+
+        # If chdir is defined add it before the command
+        if self.chdir:
+            command = f'cd {self.chdir} && ' + command
+
+            if self.sudo:
+                command = 'sudo ' + command
 
         client = self.get_client()
         stdin, stdout, stderr = client.exec_command(command, get_pty=True)
@@ -107,18 +118,15 @@ class BaseExecutor(metaclass=ABCMeta):
         if password_correct:
             return password_correct
 
-        error = stderr.read().decode().split('\n')
         output = stdout.read().decode().split('\n')
 
-        if error != ['']:
-            error_in_text = self.error_in_text(error)
-            catched_error = self.catched_error(error)
+        # Catch the error
+        error_in_text = self.error_in_text(output)
+        catched_error = self.catched_error(output)
 
-            if (error_in_text or not catched_error) or (not catched_error and not error_in_text):
-                # Checks if the error is just a warning or an actual error
-                return Result(Status.FAIL, stdin=command, stdout=error)
-            else:
-                output = error
+        if error_in_text and not catched_error:
+            # Checks if the error is just a warning or an actual error
+            return Result(Status.FAIL, stdin=command, stdout=output)
 
         return Result(Status.CHANGED if self.is_changed(output) else Status.SUCCESS, stdin=command, stdout=output, output=self.output)
 
@@ -135,9 +143,9 @@ class BaseExecutor(metaclass=ABCMeta):
 
         for line in output:
             lower_line = line.lower()
-
-            if 'error' in lower_line or 'fail' in lower_line:
-                return True
+            for error_line in self.error_lines:
+                if error_line in lower_line:
+                    return True
 
         return False
 
@@ -151,12 +159,6 @@ class BaseExecutor(metaclass=ABCMeta):
         Returns:
             If the error is catched
         """
-
-        for line in output:
-            lower_line = line.lower()
-
-            if 'warning' in lower_line:
-                return True
 
         return False
 
@@ -244,11 +246,11 @@ class BaseExecutor(metaclass=ABCMeta):
             return config.channels[self.host.url]
         else:
             client = paramiko.SSHClient()
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.load_system_host_keys()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(hostname=self.host.url, username=self.host.ssh_user, password=self.host.ssh_password,
                            pkey=paramiko.RSAKey.from_private_key_file(os.path.expanduser(self.host.ssh_identity_file)),
-                           allow_agent=False, look_for_keys=False)
+                           allow_agent=False)
 
             config.channels[self.host.url] = client
 

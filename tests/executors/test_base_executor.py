@@ -70,15 +70,8 @@ class ExecuteOnHostTest(unittest.TestCase):
 
 class RunCommandTest(unittest.TestCase):
     @mock.patch('paramiko.SSHClient')
-    def test_execute_on_host_error(self, client_mock):
-        executor = executor = self.mock_executor(client_mock, (BytesIO(b'output'),) * 3)
-
-        result = executor.run_command()
-        self.assertEqual(result.status, Status.FAIL)
-
-    @mock.patch('paramiko.SSHClient')
     def test_execute_on_host_success(self, client_mock):
-        executor = executor = self.mock_executor(client_mock, (BytesIO(b'output'), BytesIO(b'output'), BytesIO(b'')))
+        executor = self.mock_executor(client_mock, (BytesIO(b'output'), BytesIO(b'output'), BytesIO(b'')))
 
         result = executor.run_command()
 
@@ -87,7 +80,7 @@ class RunCommandTest(unittest.TestCase):
     @mock.patch('paramiko.SSHClient')
     def test_execute_on_host_success_sudo(self, client_mock):
         # mock ssh client
-        executor = executor = executor = self.mock_executor(client_mock, (BytesIO(b'output'), BytesIO(b'output'), BytesIO(b'')), sudo=True)
+        executor = self.mock_executor(client_mock, (BytesIO(b'output'), BytesIO(b'output'), BytesIO(b'')), sudo=True)
 
         fill_password = Mock()
         fill_password.return_value = None
@@ -99,28 +92,42 @@ class RunCommandTest(unittest.TestCase):
 
     @mock.patch('paramiko.SSHClient')
     def test_execute_warning(self, client_mock):
-        executor = executor = self.mock_executor(client_mock, (BytesIO(b'warnings'),) * 3)
+        executor = self.mock_executor(client_mock, (BytesIO(b'warnings'),) * 3)
 
         result = executor.run_command()
         self.assertEqual(result.status, Status.SUCCESS)
 
     @mock.patch('paramiko.SSHClient')
+    def test_chdir(self, client_mock):
+        executor = self.mock_executor(client_mock, (BytesIO(b'warnings'),) * 3, chdir='/var/www')
+
+        result = executor.run_command()
+        self.assertEqual(result.stdin, 'cd /var/www && value')
+
+    @mock.patch('paramiko.SSHClient')
+    def test_env_variables(self, client_mock):
+        executor = self.mock_executor(client_mock, (BytesIO(b'warnings'),) * 3, env={'TEST': 'test1'})
+
+        result = executor.run_command()
+        self.assertEqual(result.stdin, 'TEST="test1" value')
+
+    @mock.patch('paramiko.SSHClient')
     def test_execute_warning_error(self, client_mock):
-        executor = executor = self.mock_executor(client_mock, (BytesIO(b'warnings error'),) * 3)
+        executor = self.mock_executor(client_mock, (BytesIO(b'warnings error'),) * 3)
 
         result = executor.run_command()
         self.assertEqual(result.status, Status.FAIL)
 
     @mock.patch('paramiko.SSHClient')
     def test_execute_error(self, client_mock):
-        executor = executor = self.mock_executor(client_mock, (BytesIO(b'error'),) * 3)
+        executor = self.mock_executor(client_mock, (BytesIO(b'error'),) * 3)
 
         result = executor.run_command()
         self.assertEqual(result.status, Status.FAIL)
 
     @mock.patch('paramiko.SSHClient')
     def test_execute_wrong_password(self, client_mock):
-        executor = executor = self.mock_executor(client_mock, (BytesIO(b'output'),) * 3)
+        executor = self.mock_executor(client_mock, (BytesIO(b'output'),) * 3)
 
         fill_password = Mock()
         fill_password.return_value = Result(Status.FAIL, message='Incorrect linux password!')
@@ -147,6 +154,7 @@ class RunCommandTest(unittest.TestCase):
 
     def setUp(self):
         config.hosts = [Localhost()]
+        config.registry = {}
 
 
 class RegisterResultTest(unittest.TestCase):

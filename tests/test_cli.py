@@ -39,7 +39,7 @@ class AddConfigTests(unittest.TestCase):
         """
 
         cli.add_config(get_config_file())
-        self.assertEqual(general_config.hosts + [Localhost()], config.general_config.hosts)
+        self.assertEqual(general_config.hosts, config.general_config.hosts)
 
     def test_specified_config_wrong(self):
         """
@@ -57,7 +57,7 @@ class AddConfigTests(unittest.TestCase):
 
         os.chdir(get_helper_directory())
         cli.add_config('config.py')
-        self.assertEqual(general_config.hosts + [Localhost()], config.general_config.hosts)
+        self.assertEqual(general_config.hosts, config.general_config.hosts)
         os.chdir(work_dir)
 
     def test_work_directory_config_wrong(self):
@@ -97,7 +97,7 @@ class AddHostsTests(unittest.TestCase):
         """
 
         cli.add_hosts(general_config.hosts[0].url)
-        self.assertEqual([general_config.hosts[0]], config.hosts)
+        self.assertEqual([general_config.hosts[0], Localhost()], config.hosts)
 
     def test_two_specific_host(self):
         """
@@ -105,7 +105,7 @@ class AddHostsTests(unittest.TestCase):
         """
 
         cli.add_hosts(general_config.hosts[0].url + ',' + general_config.hosts[1].url)
-        self.assertEqual([general_config.hosts[0], general_config.hosts[1]], config.hosts)
+        self.assertEqual([general_config.hosts[0], general_config.hosts[1], Localhost()], config.hosts)
 
     def test_wrong_url(self):
         """
@@ -174,6 +174,7 @@ class AddTagsAndSkipTagsTests(unittest.TestCase):
         config.tags = []
         config.skip_tags = []
 
+
 class AddExtraVarsTests(unittest.TestCase):
     def test_no_extra_vars(self):
         cli.add_extra_vars('')
@@ -191,7 +192,7 @@ class AddExtraVarsTests(unittest.TestCase):
         with self.assertRaises(WrongExtraVarsFormatException):
             cli.add_extra_vars('key=value key2-value2')
 
-    def tearDown(self):
+    def setUp(self):
         config.registry = {}
 
 

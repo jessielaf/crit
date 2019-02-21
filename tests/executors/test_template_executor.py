@@ -8,7 +8,7 @@ class TestTemplateExecutor(unittest.TestCase):
     def test_create_template(self):
         config.registry['test'] = 'test2'
         executor = TemplateExecutor(
-            src='helpers/template.txt',
+            src='tests/helpers/template.txt',
             dest='test'
         )
         executor.sequence = Sequence(executors=[])

@@ -12,4 +12,4 @@ class DockerPullExecutor(BaseExecutor):
     extra_commands: str = ''
 
     def commands(self):
-        return f'docker pull ${self.extra_commands} ${self.image}'
+        return f'docker pull {self.extra_commands} {self.image}'

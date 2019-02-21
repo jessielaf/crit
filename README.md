@@ -145,7 +145,7 @@ Planning
 
 ## Tests
 
-Right now we test the cli and the base executor because that is where most of the logic is a.t.m. You can run the tests by running `python3 -m unittest`
+Right now we test the cli and the base executor because that is where most of the logic is a.t.m. You can run the tests by running `python3 -m unittest discover`
 
 ### Docs
 

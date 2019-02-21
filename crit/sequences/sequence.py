@@ -54,9 +54,10 @@ class Sequence:
                 else:
                     new_executors = executor(host)
 
-                    for new_executor in new_executors:
-                        self.print_title(new_executor)
-                        self.run_executor(host, new_executor)
+                    if new_executors:
+                        for new_executor in new_executors:
+                            self.print_title(new_executor)
+                            self.run_executor(host, new_executor)
 
     def run_executor(self, host: Host, executor: BaseExecutor):
         """
