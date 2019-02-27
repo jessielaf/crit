@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+from crit.executors import BaseExecutor
+
+
 class ConfigNotInFileException(Exception):
     """
     This exception is thrown when the config file does not have a variable host
@@ -36,3 +40,21 @@ class WrongExtraVarsFormatException(Exception):
     """
 
     msg = 'The format of the extra vars is not correct'
+
+
+@dataclass
+class SingleExecutorFailedException(Exception):
+    """
+    Gets thrown when you pass throw exception to the execute command of a single executor
+    """
+
+    executor: BaseExecutor
+    msg = 'SingleExecutor failed and execute got throw exception_on_error'
+
+
+class NotBaseExecutorTypeException(Exception):
+    """
+    Gets thrown when a executor passed to a sequence or
+    """
+
+    msg = 'The executor does not inherit BaseExecutor'

@@ -76,6 +76,7 @@ The **first parameter** is the path to the **sequence script** but crit also has
 | `-t`  | `--tags`   | ''      | Comma separated string with the tags which filters which executors will run | `tag1,tag2` |
 | `-st` | `--skip-tags` | '' | Comma separated string with the tags the sequence will skip | `tag3,tag4` |
 | `-e` | `--extra-vars` | '' | Key value based variable that will be inserted into the registry | `'key=value key2=value2'` |
+| `-p` | `--linux-pass` | '' | Crit will ask for the linux password for the user that is used for ssh'ing | `-p` |
 | `-v` | `--verbose` | 0 | Declares the debug level based on how many v's are given | `-v` or `-vv` or `-vvv` ect. |
 
 #### Verbosity
@@ -88,20 +89,34 @@ The **first parameter** is the path to the **sequence script** but crit also has
 
 An executor is a class that contains a command that will run on the server. Your crit config will all be based on executors.
 
-### Standard executors
+### Executors
 
 Crit comes with some default executors
 
 | Name               | Description                                                  | Doc url |
 |--------------------|--------------------------------------------------------------|---------|
-| `BaseExecutor`     | The base executor where all the other executors are build on | [link](https://crit.readthedocs.io/en/latest/crit.executors.base_executor.html)        |
-| `CommandExecutor`  | Executes a command on a server | [link](https://crit.readthedocs.io/en/latest/crit.executors.command_executor.html)        |
-| `AptExecutor` | Installs package via apt-get | [link](https://crit.readthedocs.io/en/latest/crit.executors.apt_executor.html)        |
-| `UserExecutor` | Creates a linux user | [link](https://crit.readthedocs.io/en/latest/crit.executors.user_executor.html)        |
-| `FileExecutor` | Creates a file or directory based on the status | [link](https://crit.readthedocs.io/en/latest/crit.executors.file_executor.html)        |
-| `DockerRunExecutor` | Run a docker container | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker_run_executor.html)        |
-| `DockerPullExecutor` | Pulls a docker image | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker_pull_executor.html)        |
-| `TemplateExecutor` | Creates a file on the host based on a template               | [link](https://crit.readthedocs.io/en/latest/crit.executors.template_executor.html)        |
+| **Abstract Executors**    | | |
+| `BaseExecutor`     | The abstract class every executor should inherit. This will often be done by inheriting SingleExecutor or MultiExecutor| [link](https://crit.readthedocs.io/en/latest/crit.executors.base_executor.html)        |
+| `SingleExecutor`     | If the executor has a main single command. This is the class that will be inherited | [link](https://crit.readthedocs.io/en/latest/crit.executors.single_executor.html)        |
+| `MultiExecutor`     | If an executor relies on multiple single executors you can use a multi executor to run all the executors | [link](https://crit.readthedocs.io/en/latest/crit.executors.multi_executor.html)        |
+| **Util executors**  | | |
+| `CommandExecutor`  | Executes a command on a server | [link](https://crit.readthedocs.io/en/latest/crit.executors.utils.command_executor.html)        |
+| `AptExecutor` | Installs package via apt-get | [link](https://crit.readthedocs.io/en/latest/crit.executors.utils.apt_executor.html)        |
+| `UserExecutor` | Creates a linux user | [link](https://crit.readthedocs.io/en/latest/crit.executors.utils.user_executor.html)        |
+| `FileExecutor` | Creates a file or directory based on the status | [link](https://crit.readthedocs.io/en/latest/crit.executors.utils.file_executor.html)        |
+| `Templa``teExecutor` | Creates a file on the host based on a template               | [link](https://crit.readthedocs.io/en/latest/crit.executors.utils.template_executor.html)        |
+| **Docker Executors** | | |
+| `DockerInstallExecutor` | Build a docker container | [link](https://crit.readthedocs.io/en/latest/crit.executors.premade.docker_build_executor.html) |
+| `DockerBuildExecutor` | Build a docker container | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker.docker_build_executor.html) |
+| `DockerRunExecutor` | Run a docker container | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker.docker_run_executor.html) |
+| `DockerPullExecutor` | Pulls a docker image | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker.docker_pull_executor.html) |
+| `DockerPushExecutor` | Pushes a docker image to a registry | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker.docker_push_executor.html) |
+| `DockerTagExecutor` | Tags a docker container | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker.docker_tag_executor.html) |
+| **Git Executors** | | |
+| `GitExecutor` | Runs git clone -> git checkout -> git pull for one repository | [link](https://crit.readthedocs.io/en/latest/crit.executors.premade.git_executor.html) |
+| `GitCloneExecutor` | Clones a repository | [link](https://crit.readthedocs.io/en/latest/crit.executors.git.git_clone_executor.html) |
+| `GitCheckoutExecutor` | Checks out a certain git branch | [link](https://crit.readthedocs.io/en/latest/crit.executors.git.git_checkout_executor.html) |
+| `GitPullExecutor` | Pulls the changes to the repository | [link](https://crit.readthedocs.io/en/latest/crit.executors.git.git_pull_executor.html) |
 
 > All executors can be found in the namespace `crit.executors`
 
@@ -117,16 +132,16 @@ As you can see this is very limited. This is why you can extend the BaseExecutor
 
 ```python3
 from dataclasses import dataclass
-from crit.executors import BaseExecutor
+from crit.executors import SingleExecutor
 
 
 @dataclass
-class CommandExecutor(BaseExecutor):
+class CommandExecutor(SingleExecutor):
     command: str = None
-    output: bool = True
 
-    def commands(self, host) -> str:
+    def commands(self) -> str:
         return self.command
+
 ```
 
 > All the attributes of a custom executor that is also a @dataclass need to have a default value
@@ -153,10 +168,7 @@ The url to the docs are:
 
 To build the docs:
 ```
-export SPHINX_APIDOC_OPTIONS=members,show-inheritance &&
-sphinx-apidoc -o docs crit -f -e &&
-cp README.md docs/install.md &&
-sphinx-build -b html docs docs/_build
+export SPHINX_APIDOC_OPTIONS=members,show-inheritance && sphinx-apidoc -o docs crit -f -e && cp README.md docs/install.md && sphinx-build -b html docs docs/_build
 ```
 
 ## Deployment

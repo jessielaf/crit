@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 
 from dataclasses import dataclass
-from crit.executors import BaseExecutor
+from crit.executors import SingleExecutor
 
 
 class TypeFile(Enum):
@@ -15,7 +15,7 @@ class TypeFile(Enum):
 
 
 @dataclass
-class FileExecutor(BaseExecutor):
+class FileExecutor(SingleExecutor):
     """
     Create file or directory
 

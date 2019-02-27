@@ -2,14 +2,14 @@ import unittest
 from unittest.mock import Mock, patch
 
 from crit.config import Localhost
-from crit.executors import BaseExecutor, Result
+from crit.executors import SingleExecutor, Result
 from crit.executors.result import Status
 from crit.sequences import Sequence
 
 
-@patch.multiple(BaseExecutor, __abstractmethods__=set())
+@patch.multiple(SingleExecutor, __abstractmethods__=set())
 def get_executor(*args, **kwargs):
-    return BaseExecutor(*args, **kwargs)
+    return SingleExecutor(*args, **kwargs)
 
 
 class RunTest(unittest.TestCase):

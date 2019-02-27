@@ -36,6 +36,7 @@ class Localhost(Host):
     """
 
     url: str = 'localhost'
+    passwordless_user: bool = True
 
     # Added the try except for read the docs os.getlogin() needs permissions
     try:

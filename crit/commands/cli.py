@@ -18,8 +18,8 @@ from crit.utils import get_host_by_name
 @click.option('-t', '--tags', default='', help='Comma separated string with the tags which filters which executors will run')
 @click.option('-st', '--skip-tags', default='', help='Comma separated string with the tags the sequence will skip')
 @click.option('-e', '--extra-vars', default='', help='Key value based variable that will be inserted into the registry')
-@click.option('-v', '--verbose', default=0, count=True, help='Shows the commands that are running')
 @click.option('-p', '--linux-pass', is_flag=True, help='Crit will ask for the linux password')
+@click.option('-v', '--verbose', default=0, count=True, help='Shows the commands that are running')
 def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: str, skip_tags: str, extra_vars: str, verbose: int, linux_pass):
     add_config(config)
     add_hosts(hosts)
@@ -62,10 +62,10 @@ def add_hosts(hosts: Union[str, List[str]]):
         config_module.hosts = config_module.general_config.hosts
     else:
         for host in hosts.split(','):
-            if host != 'localhost' and host != '127.0.0.1':
+            if host == 'localhost' or host == '127.0.0.1':
+                config_module.hosts.append(Localhost())
+            else:
                 config_module.hosts.append(get_host_by_name(host))
-
-    config_module.hosts.append(Localhost())
 
 
 def run_sequence(sequence_file: str):

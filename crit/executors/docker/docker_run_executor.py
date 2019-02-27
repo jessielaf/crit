@@ -1,22 +1,24 @@
 from typing import Dict, List
 from dataclasses import dataclass
-from crit.executors import BaseExecutor
+from crit.executors import SingleExecutor
 
 
 @dataclass
-class DockerRunExecutor(BaseExecutor):
+class DockerRunExecutor(SingleExecutor):
     """
     Args:
         image (str): The image which should be pulled and the command that should be ran on the command. :obj:`required`
+        name (str): The name that will be given to the image. :obj:`optional`
         volumes (Dict[str, str]): Volumes which should be mounted. Key is the host-src and the value is the container-src. :obj:`optional`
         ports (Dict[str, str]): Ports which should be exposed. Key is the host-post and the value is the container-post. :obj:`optional`
         detached (bool): Run in detached mode. Defaults to :obj:`True`
         tty (bool): Run in tty mode. Defaults to :obj:`False`
-        environment (Dict[str, str]): Env variables for the run. :obj:`optional`
-        extra_commands (str): Command added behind the normal command. :obj: `optional`
+        environment (Dict[str, str]): Env variables for the docker run command. :obj:`optional`
+        extra_commands (str): Command added behind the normal command. :obj:`optional`
     """
 
     image: str = ''
+    name: str = ''
     ports: Dict[str, str] = None
     volumes: Dict[str, str] = None
     environment: Dict[str, str] = None
@@ -32,6 +34,9 @@ class DockerRunExecutor(BaseExecutor):
 
         if self.tty:
             command += ' -t'
+
+        if self.name:
+            command += f' --name {self.name}'
 
         if self.ports:
             for key, value in self.ports.items():

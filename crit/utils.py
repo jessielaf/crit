@@ -1,4 +1,4 @@
-from crit.config import config, Host
+from crit.config import config, Host, Localhost
 from crit.exceptions import MoreHostsWithSameUrlException, HostNotFoundException
 
 
@@ -12,6 +12,9 @@ def get_host_by_name(url: str) -> Host:
     Returns:
         Host: host that matches with the url
     """
+
+    if url == 'localhost' or url == '127.0.0.1':
+        return Localhost()
 
     host = [host for host in config.general_config.hosts if host.url == url]
 

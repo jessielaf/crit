@@ -1,12 +1,10 @@
 import shutil
-
 from dataclasses import dataclass
-from typing import Union, List, Callable
-
+from typing import Union, List
+from crit.exceptions import NotBaseExecutorTypeException
 from termcolor import colored
-
 from crit.config import config, Host
-from crit.executors import BaseExecutor
+from crit.executors import SingleExecutor, BaseExecutor
 
 
 @dataclass
@@ -22,10 +20,11 @@ class Sequence:
         term_width (int): Width of the terminal
     """
 
-    executors: List[Union[BaseExecutor, Callable[[Host], List[BaseExecutor]]]]
+    executors: List[SingleExecutor]
     hosts: Union[Host, List[Host]] = None
 
     term_width = shutil.get_terminal_size((80, 20)).columns - 1
+
 
     def run(self):
         """
@@ -38,40 +37,24 @@ class Sequence:
         for name, channel in config.channels.items():
             channel.close()
 
-    def run_executors(self, executors: List[BaseExecutor]):
+    def run_executors(self, executors: List[SingleExecutor]):
         """
         Runs all the executors in an array on every host
 
         Args:
-            executors (List[BaseExecutor]): The executors to run
+            executors (List[SingleExecutor]): The executors to run
         """
 
         for executor in executors:
-            for host in self.hosts:
+            self.print_title(executor)
+
+            hosts = executor.hosts or self.hosts
+            for host in hosts:
                 if isinstance(executor, BaseExecutor):
-                    self.print_title(executor)
-                    self.run_executor(host, executor)
+                    result = executor.execute(host)
+                    result.to_table(host)
                 else:
-                    new_executors = executor(host)
-
-                    if new_executors:
-                        for new_executor in new_executors:
-                            self.print_title(new_executor)
-                            self.run_executor(host, new_executor)
-
-    def run_executor(self, host: Host, executor: BaseExecutor):
-        """
-        Run an executor on a host. Also runs the nested executors with :obj:`run_command`
-
-        Args:
-            host (Host): Host on which the executor will run
-            executor (BaseExecutor): Executor that will run
-        """
-
-        result = executor.execute(host)
-        result.to_table(host)
-
-        self.run_executors(executor.post_executors(result))
+                    raise NotBaseExecutorTypeException()
 
     def print_title(self, executor):
         """

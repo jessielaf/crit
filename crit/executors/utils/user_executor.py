@@ -1,13 +1,13 @@
 from typing import List
 from dataclasses import dataclass
-from crit.executors import BaseExecutor, Result
+from crit.executors import SingleExecutor, Result
 from crit.executors.result import Status
 from .file_executor import FileExecutor, TypeFile
 from .command_executor import CommandExecutor
 
 
 @dataclass
-class UserExecutor(BaseExecutor):
+class UserExecutor(SingleExecutor):
     """
     Creates a linux user
 

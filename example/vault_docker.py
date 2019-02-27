@@ -1,7 +1,7 @@
 import json
 from crit.config import Host, config
+from crit.executors.docker import DockerRunExecutor
 from crit.sequences import Sequence
-from crit.executors import DockerRunExecutor
 
 
 def docker_vault_run(host: Host):

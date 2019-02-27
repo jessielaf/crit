@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import List
 
-from crit.executors import BaseExecutor
+from crit.executors import SingleExecutor
 
 
 @dataclass
-class GitCheckoutExecutor(BaseExecutor):
+class GitCheckoutExecutor(SingleExecutor):
     """
     Checkout a version of a repository
 

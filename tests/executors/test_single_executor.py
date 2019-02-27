@@ -3,14 +3,14 @@ from io import BytesIO
 from unittest import mock
 from unittest.mock import patch, Mock
 from crit.config import Localhost, config, Host
-from crit.executors import BaseExecutor, Result
+from crit.executors import SingleExecutor, Result
 from crit.executors.result import Status
 from example.config import config as general_config
 
 
-@patch.multiple(BaseExecutor, __abstractmethods__=set())
+@patch.multiple(SingleExecutor, __abstractmethods__=set())
 def get_executor(*args, **kwargs):
-    return BaseExecutor(*args, **kwargs)
+    return SingleExecutor(*args, **kwargs)
 
 
 class ExecuteOnHostTest(unittest.TestCase):

@@ -1,4 +1,4 @@
-from crit.executors import CommandExecutor
+from crit.executors.utils import CommandExecutor
 from crit.sequences import Sequence
 
 sequence = Sequence(

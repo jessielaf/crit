@@ -1,6 +1,5 @@
 import unittest
-from crit.config import Localhost
-from crit.executors import AptExecutor
+from crit.executors.utils import AptExecutor
 
 
 class TestAptExecutor(unittest.TestCase):

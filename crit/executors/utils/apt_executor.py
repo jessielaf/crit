@@ -1,14 +1,16 @@
 from typing import List
 from dataclasses import dataclass
-from crit.executors import BaseExecutor
+from crit.executors import SingleExecutor
+
 
 @dataclass
 class _Action:
     command: str
     line: str
 
+
 @dataclass
-class AptExecutor(BaseExecutor):
+class AptExecutor(SingleExecutor):
     """
     Install package using the apt package manager
 

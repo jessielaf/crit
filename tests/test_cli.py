@@ -81,7 +81,7 @@ class AddHostsTests(unittest.TestCase):
         """
 
         cli.add_hosts('all')
-        self.assertEqual(general_config.hosts + [Localhost()], config.hosts)
+        self.assertEqual(general_config.hosts, config.hosts)
 
     def test_localhost(self):
         """
@@ -97,7 +97,7 @@ class AddHostsTests(unittest.TestCase):
         """
 
         cli.add_hosts(general_config.hosts[0].url)
-        self.assertEqual([general_config.hosts[0], Localhost()], config.hosts)
+        self.assertEqual([general_config.hosts[0]], config.hosts)
 
     def test_two_specific_host(self):
         """
@@ -105,7 +105,7 @@ class AddHostsTests(unittest.TestCase):
         """
 
         cli.add_hosts(general_config.hosts[0].url + ',' + general_config.hosts[1].url)
-        self.assertEqual([general_config.hosts[0], general_config.hosts[1], Localhost()], config.hosts)
+        self.assertEqual([general_config.hosts[0], general_config.hosts[1]], config.hosts)
 
     def test_wrong_url(self):
         """

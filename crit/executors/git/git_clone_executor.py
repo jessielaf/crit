@@ -2,11 +2,11 @@ import re
 from dataclasses import dataclass
 from typing import List
 
-from crit.executors import BaseExecutor
+from crit.executors import SingleExecutor
 
 
 @dataclass
-class GitCloneExecutor(BaseExecutor):
+class GitCloneExecutor(SingleExecutor):
     """
     Executor that clones and pulls a repository. Via ssh
 

@@ -1,6 +1,6 @@
 import unittest
 from crit.config import config, Localhost
-from crit.executors import TemplateExecutor
+from crit.executors.utils import TemplateExecutor
 from crit.sequences import Sequence
 
 

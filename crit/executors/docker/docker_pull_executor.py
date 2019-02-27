@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from crit.executors import BaseExecutor
+from crit.executors import SingleExecutor
 
 
 @dataclass
-class DockerPullExecutor(BaseExecutor):
+class DockerPullExecutor(SingleExecutor):
     """
     WARNING NOT TESTED
     """
