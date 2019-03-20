@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from crit.config import Localhost
+from crit.config import Localhost, config
 from crit.executors import SingleExecutor, Result
 from crit.executors.result import Status
 from crit.sequences import Sequence

@@ -1,12 +1,12 @@
 import os
 import time
-from typing import List, Dict
+from typing import List
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 import paramiko
 from crit.executors import BaseExecutor
 from paramiko import ChannelFile
-from crit.config import Host, config, Localhost
+from crit.config import Host, config
 from crit.exceptions import SingleExecutorFailedException
 from .result import Result, Status
 
@@ -17,31 +17,16 @@ class SingleExecutor(BaseExecutor, metaclass=ABCMeta):
     The base executor contains the logic for executing a command
 
     Args:
-        hosts (Union[Host, List[Host]]): The hosts where the BaseExecutor executes the command on. :obj:`optional`
-        tags (List[str): The tags decide if the executor will run if tags are passed via the cli. :obj:`optional`
-        sudo (bool): Add sudo before the command. Defaults to :obj:`False`
         output (str): Output the stdout from the executor. Defaults to :obj:`False`
-        register (str): Registers the output of the executor to the register. :obj:`optional`
-        env (Dict[str, str]): Add the env variables to the command. :obj:`optional`
-        chdir (str): Directory in which executor will go before executing its command. :obj:`optional`
 
     Attributes:
-        host (Host): The host on which the executor is running
         error_lines (List[str]): Strings that will define if a command is an error
     """
 
-    # Args
-    hosts: List[Host] = None
-    tags: List[str] = None
-    sudo: bool = False
     output: bool = False
-    register: str = None
-    env: Dict[str, str] = None
-    chdir: str = None
 
     # Attributes
-    host = None
-    error_lines = ['fail', 'fatal', 'error', 'No such file or directory', 'command not found', 'invalid']
+    error_lines = ['fail', 'fatal', 'error', 'No such file or directory', 'command not found', 'invalid', 'denied']
 
     @abstractmethod
     def commands(self) -> str:
@@ -54,35 +39,20 @@ class SingleExecutor(BaseExecutor, metaclass=ABCMeta):
 
         pass
 
-    def execute(self, host: Host, exception_on_error: bool = False, **kwargs) -> Result:
+    def execute(self, exception_on_error: bool = False, **kwargs) -> Result:
         """
         Executes the command on the host and runs the nested executors if needed
 
         Args:
-            host (Host): The host on which the executor can run
             exception_on_error (bool): Throws an exception on error. Can be used in other BaseExecutors
         """
-
-        if host not in config.hosts and not isinstance(host, Localhost):
-            return Result(Status.SKIPPING, message='Host is not in global config or passed as argument')
-
-        if not self.can_run_tags():
-            return Result(Status.SKIPPING, message='Skipping based on tags for this host')
-
-        # Check if the host in in available hosts
-        if self.hosts:
-            if host in self.hosts:
-                self.host = host
-            else:
-                return Result(Status.SKIPPING, message='Host not in executor\'s host')
-        else:
-            self.host = host
 
         result = self.run_command()
         self.register_result(result)
 
         if result.status == Status.FAIL and exception_on_error:
-            raise SingleExecutorFailedException(self)
+            result.to_table(self.host)
+            raise SingleExecutorFailedException(self, result)
 
         return result
 
@@ -201,7 +171,7 @@ class SingleExecutor(BaseExecutor, metaclass=ABCMeta):
         """
         if self.sudo and not self.host.passwordless_user:
             if not config.linux_password:
-                return Result(Status.FAIL, message='Pass linux password with -p or pass no_sudo_password on hosts!')
+                return Result(Status.FAIL, message='Pass linux password with -p or pass passwordless_user on hosts!')
 
             time.sleep(0.1)
 
@@ -218,21 +188,6 @@ class SingleExecutor(BaseExecutor, metaclass=ABCMeta):
                 return Result(Status.FAIL, message='Incorrect linux password!')
 
         return None
-
-    def register_result(self, result: Result):
-        """
-        Registers the result to the registry based on the host
-
-        Args:
-            result (Result): The result of the command
-        """
-
-        host_name = repr(self.host)
-
-        if host_name not in config.registry:
-            config.registry[host_name] = {}
-
-        config.registry[host_name][self.register] = result
 
     def get_client(self) -> paramiko.SSHClient:
         """
@@ -255,29 +210,3 @@ class SingleExecutor(BaseExecutor, metaclass=ABCMeta):
             config.channels[self.host.url] = client
 
             return client
-
-    def can_run_tags(self) -> bool:
-        """
-        Check if the executor can run based on the tags.
-        It prefers tags over skiptags
-
-        Returns:
-            If the executor can run or not
-        """
-
-        if config.tags:
-            if not self.tags:
-                return False
-
-            in_tags = [tag for tag in self.tags if tag in config.tags]
-
-            return len(in_tags) > 0
-        elif config.skip_tags:
-            if not self.tags:
-                return True
-
-            in_skip_tags = [tag for tag in self.tags if tag in config.skip_tags]
-
-            return len(in_skip_tags) == 0
-
-        return True

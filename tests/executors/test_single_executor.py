@@ -3,6 +3,7 @@ from io import BytesIO
 from unittest import mock
 from unittest.mock import patch, Mock
 from crit.config import Localhost, config, Host
+from crit.exceptions import SingleExecutorFailedException
 from crit.executors import SingleExecutor, Result
 from crit.executors.result import Status
 from example.config import config as general_config
@@ -23,34 +24,16 @@ class ExecuteOnHostTest(unittest.TestCase):
 
     def test_execute_success(self):
         executor = self.mock_executor()
-        result = executor.execute(self.host)
+        result = executor.execute()
 
         self.assertEqual(result, self.result)
 
-    def test_execute_wrong_host(self):
-        executor = self.mock_executor()
-        result = executor.execute(general_config.hosts[0])
-
-        self.assertEqual(result, Result(Status.SKIPPING, message='Host is not in global config or passed as argument'))
-
-    def test_execute_no_tags(self):
+    def test_throw_exception_on_fail(self):
+        self.result = Result(status=Status.FAIL)
         executor = self.mock_executor()
 
-        # Mock can run tags
-        can_run_tags_mock = Mock()
-        can_run_tags_mock.return_value = False
-        executor.can_run_tags = can_run_tags_mock
-
-        result = executor.execute(self.host)
-
-        self.assertEqual(result, Result(Status.SKIPPING, message='Skipping based on tags for this host'))
-
-    def test_execute_host_not_in_executor(self):
-        executor = self.mock_executor(hosts=[general_config.hosts[0]])
-
-        result = executor.execute(self.host)
-
-        self.assertEqual(result, Result(Status.SKIPPING, message='Host not in executor\'s host'))
+        with self.assertRaises(SingleExecutorFailedException):
+            executor.execute(True)
 
     def mock_executor(self, **kwargs):
         # Set executor
@@ -65,7 +48,6 @@ class ExecuteOnHostTest(unittest.TestCase):
 
     def setUp(self):
         config.hosts = [self.host]
-        print()
 
 
 class RunCommandTest(unittest.TestCase):
@@ -157,23 +139,6 @@ class RunCommandTest(unittest.TestCase):
         config.registry = {}
 
 
-class RegisterResultTest(unittest.TestCase):
-    def test_register_result(self):
-        executor = get_executor(register='test')
-        result = Result(Status.CHANGED, 'test', ['test'])
-        host = Localhost()
-
-        executor.host = host
-
-        executor.register_result(result)
-
-        self.assertEqual(config.registry[repr(host)]['test'], result)
-
-    @classmethod
-    def tearDownClass(cls):
-        config.registry = {}
-
-
 class FillPasswordTest(unittest.TestCase):
     @mock.patch('paramiko.ChannelFile')
     def test_no_sudo(self, channel):
@@ -196,7 +161,7 @@ class FillPasswordTest(unittest.TestCase):
         host = Host('test.url', 'jessie')
         executor.host = host
 
-        self.assertEqual(executor.fill_password(channel, channel), Result(Status.FAIL, message='Pass linux password with -p or pass no_sudo_password on hosts!'))
+        self.assertEqual(executor.fill_password(channel, channel), Result(Status.FAIL, message='Pass linux password with -p or pass passwordless_user on hosts!'))
 
     @mock.patch('paramiko.ChannelFile')
     def test_right_password(self, channel):
@@ -227,64 +192,6 @@ class FillPasswordTest(unittest.TestCase):
         executor.host = host
 
         self.assertEqual(executor.fill_password(channel, channel), Result(Status.FAIL, message='Incorrect linux password!'))
-
-
-class TagsTest(unittest.TestCase):
-    """
-    Tests if the right response is returned when some tags are set
-    """
-
-    def test_no_tags_no_skip_tags(self):
-        config.tags = []
-        config.skip_tags = []
-
-        self.assertTrue(get_executor().can_run_tags())
-
-    def test_with_tags_no_skip_no_tags_in_executor(self):
-        config.tags = ['tag1']
-        config.skip_tags = []
-
-        self.assertFalse(get_executor().can_run_tags())
-
-    def test_no_tags_with_skip_no_tags_in_executor(self):
-        config.tags = []
-        config.skip_tags = ['tag1']
-
-        self.assertTrue(get_executor().can_run_tags())
-
-    def test_with_tags_no_skip_tags_tags_in_executor(self):
-        config.tags = ['tag1']
-        config.skip_tags = []
-
-        self.assertTrue(get_executor(tags=['tag1', 'tag2']).can_run_tags())
-
-    def test_with_tags_no_skip_tags_tags_not_in_executor(self):
-        config.tags = ['tag1']
-        config.skip_tags = []
-
-        self.assertFalse(get_executor(tags=['tag2']).can_run_tags())
-
-    def test_no_tags_with_skip_tags_skip_tags_in_executor(self):
-        config.tags = []
-        config.skip_tags = ['tag2']
-
-        self.assertFalse(get_executor(tags=['tag1', 'tag2']).can_run_tags())
-
-    def test_no_tags_with_skip_tags_skip_tags_not_in_executor(self):
-        config.tags = []
-        config.skip_tags = ['tag2']
-
-        self.assertTrue(get_executor(tags=['tag1']).can_run_tags())
-
-    def test_tags_and_skip_tags_in_executor(self):
-        """
-        This test the priority of the config.tags over config.skip_tags
-        """
-
-        config.tags = ['tag1']
-        config.skip_tags = ['tag1']
-
-        self.assertTrue(get_executor(tags=['tag1']).can_run_tags())
 
 
 if __name__ == '__main__':

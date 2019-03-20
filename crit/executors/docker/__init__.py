@@ -1,4 +1,5 @@
 from .docker_pull_executor import DockerPullExecutor
+from .docker_install_executor import DockerInstallExecutor
 from .docker_run_executor import DockerRunExecutor
 from .docker_push_executor import DockerPushExecutor
 from .docker_tag_executor import DockerTagExecutor

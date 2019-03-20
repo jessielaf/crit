@@ -5,7 +5,8 @@ from unittest import mock
 from unittest.mock import Mock
 from crit.commands import cli
 from crit.config import Localhost, config
-from crit.exceptions import NoSequenceException, HostNotFoundException, WrongExtraVarsFormatException
+from crit.exceptions import NoSequenceException, HostNotFoundException, WrongExtraVarsFormatException, \
+    ConfigNotInFileException
 from tests.helpers.config import config as general_config
 
 
@@ -69,6 +70,11 @@ class AddConfigTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             cli.add_config('config.py')
         os.chdir(work_dir)
+
+    def test_no_config_in_file(self):
+        os.chdir(get_helper_directory())
+        with self.assertRaises(ConfigNotInFileException):
+            cli.add_config('test.py')
 
     def tearDown(self):
         config.all_hosts = []

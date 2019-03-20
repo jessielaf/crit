@@ -11,3 +11,5 @@ __pycache__/
 # Docs
 !/docs/_build/.gitkeep
 /docs/_build
+/htmlcov
+.coverage

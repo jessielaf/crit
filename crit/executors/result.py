@@ -3,7 +3,7 @@ from enum import Enum, unique
 from typing import List
 from dataclasses import dataclass
 from termcolor import colored
-from crit.config import Host, config
+from crit.config import Host, config, Localhost
 
 
 @unique
@@ -35,7 +35,8 @@ class Result:
 
         if self.status == Status.FAIL:
             # Delete host from the hosts to pick from
-            config.hosts.remove(host)
+            if not isinstance(host, Localhost) and host in config.hosts:
+                config.hosts.remove(host)
             self.output = True
 
         if config.verbose > 0:

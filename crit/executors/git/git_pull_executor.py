@@ -16,12 +16,12 @@ class GitPullExecutor(SingleExecutor):
     force: bool = False
 
     def commands(self) -> str:
-        command = f'git pull'
+        command = f'git '
 
         if self.force:
-            command += ' --force'
+            command += '--force '
 
-        return command
+        return command + 'pull'
 
     def is_changed(self, output: List[str]):
         for line in output:

@@ -1,4 +1,6 @@
+import codecs
 import os
+import re
 from dataclasses import dataclass
 from jinja2 import Template
 from crit.config import config, Host
@@ -39,4 +41,12 @@ class TemplateExecutor(SingleExecutor):
                 executor=self
             )
 
-            return 'echo ' + template_output + ' > ' + self.dest
+            # Adds line endings and escaping quotes
+            text = codecs.escape_encode(bytes(template_output, "utf-8"))[0].decode("utf-8").replace("'", "\'")
+
+            pipe = '| '
+            if self.sudo:
+                pipe += 'sudo '
+            pipe += f'tee {self.dest}'
+
+            return 'printf \'' + text + f'\' {pipe}'

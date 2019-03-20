@@ -4,7 +4,7 @@ from typing import Union, List
 from crit.exceptions import NotBaseExecutorTypeException
 from termcolor import colored
 from crit.config import config, Host
-from crit.executors import SingleExecutor, BaseExecutor
+from crit.executors import BaseExecutor
 
 
 @dataclass
@@ -20,11 +20,10 @@ class Sequence:
         term_width (int): Width of the terminal
     """
 
-    executors: List[SingleExecutor]
+    executors: List[BaseExecutor]
     hosts: Union[Host, List[Host]] = None
 
     term_width = shutil.get_terminal_size((80, 20)).columns - 1
-
 
     def run(self):
         """
@@ -37,7 +36,7 @@ class Sequence:
         for name, channel in config.channels.items():
             channel.close()
 
-    def run_executors(self, executors: List[SingleExecutor]):
+    def run_executors(self, executors: List[BaseExecutor]):
         """
         Runs all the executors in an array on every host
 
@@ -51,7 +50,7 @@ class Sequence:
             hosts = executor.hosts or self.hosts
             for host in hosts:
                 if isinstance(executor, BaseExecutor):
-                    result = executor.execute(host)
+                    result = executor.run(host)
                     result.to_table(host)
                 else:
                     raise NotBaseExecutorTypeException()

@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import List
-
 from crit.executors import SingleExecutor
 
 
@@ -18,12 +17,12 @@ class GitCheckoutExecutor(SingleExecutor):
     force: bool = False
 
     def commands(self) -> str:
-        command = f'git checkout {self.version}'
+        command = f'git checkout '
 
         if self.force:
-            command += ' --force'
+            command += '--force '
 
-        return command
+        return command + self.version
 
     def is_changed(self, output: List[str]):
         for line in output:

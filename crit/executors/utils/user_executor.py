@@ -1,13 +1,15 @@
-from typing import List
 from dataclasses import dataclass
-from crit.executors import SingleExecutor, Result
-from crit.executors.result import Status
-from .file_executor import FileExecutor, TypeFile
-from .command_executor import CommandExecutor
+from typing import List
+from crit.config import Host
+from crit.exceptions import SingleExecutorFailedException
+from crit.executors import MultiExecutor
+from crit.executors.result import Status, Result
+from crit.executors.utils import FileExecutor, CommandExecutor, UserAddExecutor
+from crit.executors.utils.file_executor import TypeFile
 
 
 @dataclass
-class UserExecutor(SingleExecutor):
+class UserExecutor(MultiExecutor):
     """
     Creates a linux user
 
@@ -25,57 +27,64 @@ class UserExecutor(SingleExecutor):
     password: str = ''
     create_home: bool = True
     shell: str = '/bin/bash'
-    groups: List[str] = None
+    groups: List[str] = None,
     ssh_keys: List[str] = None
     sudo: bool = True
 
-    def commands(self):
-        add_user_command = f'useradd -s {self.shell}'
+    def execute(self, host: Host, **kwargs):
+        results = []
 
-        # Add password
-        if self.password:
-            add_user_command += f' -p \'{self.password}\''
+        try:
+            added_user = UserAddExecutor(
+                username=self.username,
+                password=self.password,
+                create_home=self.create_home,
+                shell=self.shell,
+                groups=self.groups,
+                **self.get_base_attributes()
+            ).execute(host, True)
 
-        # Add create home for user
-        if self.create_home:
-            add_user_command += ' -m'
+            results.append(added_user)
 
-        # Add groups
-        if self.groups:
-            add_user_command += ' -G '
-            for i, group in enumerate(self.groups):
-                if i != 0:
-                    add_user_command += ','
+            # Check if the user is created. If it is created or changed only then update everything
+            if added_user.status == Status.CHANGED:
+                # Creates ssh folder
+                results.append(FileExecutor(
+                    path=f'/home/{self.username}/.ssh',
+                    type_file=TypeFile.DIRECTORY,
+                    **self.get_base_attributes()
+                ).execute(host, True))
 
-                add_user_command += group
+                # Creates the authorized_keys file
+                results.append(FileExecutor(
+                    path=f'/home/{self.username}/.ssh/authorized_keys',
+                    type_file=TypeFile.FILE,
+                    **self.get_base_attributes()
+                ).execute(host, True))
 
-        return add_user_command + ' ' + self.username
+                # Add ssh keys to the authorized keys
+                CommandExecutor(
+                    command=f'printf \'{self.ssh_keys}\' | sudo tee /home/{self.username}/.ssh/authorized_keys > /dev/null',
+                    **self.get_base_attributes()
+                )
 
-    def catched_error(self, output: List[str]):
-        for line in output:
-            if f'useradd: user \'{self.username}\' already exists' in line:
-                return True
+                # Add right permissions to the home folder of the user
+                CommandExecutor(
+                    command=f'chown -R {self.username}:{self.username} /home/{self.username}/',
+                    **self.get_base_attributes()
+                )
 
-        return super().catched_error(output)
+                # Permissions for the .ssh folder
+                CommandExecutor(
+                    command=f'chmod 700 /home/{self.username}/.ssh',
+                    **self.get_base_attributes()
+                )
 
-    def is_changed(self, output: List[str]):
-        for line in output:
-            if f'useradd: user \'{self.username}\' already exists' in line:
-                return False
+                # Permissions for the authorized keys file
+                CommandExecutor(
+                    command=f'chmod 644 /home/{self.username}/.ssh/authorized_keys',
+                    **self.get_base_attributes()
+                ).execute(host)
 
-        return True
-
-    def post_executors(self, result: Result):
-        if self.ssh_keys and result.status == Status.CHANGED:
-            ssh_keys = '\n'.join(self.ssh_keys)
-
-            return [
-                FileExecutor(path=f'/home/{self.username}/.ssh', type_file=TypeFile.DIRECTORY, sudo=self.sudo),
-                FileExecutor(path=f'/home/{self.username}/.ssh/authorized_keys', type_file=TypeFile.FILE, sudo=self.sudo),
-                CommandExecutor(command=f'echo \'{ssh_keys}\' | sudo tee /home/{self.username}/.ssh/authorized_keys > /dev/null', sudo=self.sudo),
-                CommandExecutor(command=f'chown -R {self.username}:{self.username} /home/{self.username}/', sudo=self.sudo),
-                CommandExecutor(command=f'chmod 700 /home/{self.username}/.ssh', sudo=self.sudo),
-                CommandExecutor(command=f'chmod 644 /home/{self.username}/.ssh/authorized_keys', sudo=self.sudo),
-            ]
-
-        return []
+        except SingleExecutorFailedException as e:
+            return Result(Status.FAIL, message=e.msg)

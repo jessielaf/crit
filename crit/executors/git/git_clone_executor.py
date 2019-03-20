@@ -17,9 +17,7 @@ class GitCloneExecutor(SingleExecutor):
     repository: str = None
 
     def commands(self) -> str:
-        command = f'git clone {self.repository}'
-
-        return command
+        return f'git clone {self.repository}'
 
     def catched_error(self, output: List[str]):
         regexp = re.compile(r'fatal: destination path .* already exists and is not an empty directory')

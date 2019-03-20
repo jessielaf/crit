@@ -6,7 +6,7 @@ from typing import Union, List
 import click
 from importlib.machinery import SourceFileLoader
 from crit.exceptions import ConfigNotInFileException, NoSequenceException, WrongExtraVarsFormatException
-from crit.config import Localhost, config as config_module, config
+from crit.config import Localhost, config as config_module
 from crit.utils import get_host_by_name
 
 
@@ -20,14 +20,16 @@ from crit.utils import get_host_by_name
 @click.option('-e', '--extra-vars', default='', help='Key value based variable that will be inserted into the registry')
 @click.option('-p', '--linux-pass', is_flag=True, help='Crit will ask for the linux password')
 @click.option('-v', '--verbose', default=0, count=True, help='Shows the commands that are running')
-def main(sequence_file: str, hosts: Union[str, List[str]], config: str, tags: str, skip_tags: str, extra_vars: str, verbose: int, linux_pass):
+def main(sequence_file: str, hosts: Union[str, List[str]] = 'all', config: str = 'config.py', tags: str = '', skip_tags: str = '', extra_vars: str = '', verbose: int = 0, linux_pass: bool = False):
+    # Always first because other files can use the modules
+    add_work_dir_as_module()
+
     add_config(config)
     add_hosts(hosts)
     add_tags_and_skip_tags(tags, skip_tags)
     add_extra_vars(extra_vars)
     set_verbose(verbose)
     ask_linux_password(linux_pass)
-    add_work_dir_as_module()
 
     # Should always be the last one to run
     run_sequence(sequence_file)
@@ -81,15 +83,15 @@ def run_sequence(sequence_file: str):
 
     if hasattr(sequence_object, 'sequence'):
         sequence = sequence_object.sequence
-        config.sequence = sequence
+        config_module.sequence = sequence
         sequence.run()
     else:
         raise NoSequenceException()
 
 
 def add_tags_and_skip_tags(tags: str, skip_tags: str):
-    config.tags = tags.split(',') if tags else []
-    config.skip_tags = skip_tags.split(',') if skip_tags else []
+    config_module.tags = tags.split(',') if tags else []
+    config_module.skip_tags = skip_tags.split(',') if skip_tags else []
 
 
 def add_extra_vars(extra_vars: str):
@@ -111,7 +113,7 @@ def add_extra_vars(extra_vars: str):
         if len(splitted) != 2:
             raise WrongExtraVarsFormatException()
 
-        config.registry[splitted[0]] = splitted[1]
+        config_module.registry[splitted[0]] = splitted[1]
 
 
 def set_verbose(verbose: int):
@@ -122,13 +124,13 @@ def set_verbose(verbose: int):
         verbose (int): Debug level for the sequence
     """
 
-    config.verbose = verbose
+    config_module.verbose = verbose
 
 
 def ask_linux_password(linux_pass):
     if linux_pass:
         password = getpass.getpass(prompt='Password for the linux user: ')
-        config.linux_password = password
+        config_module.linux_password = password
 
 
 def add_work_dir_as_module():

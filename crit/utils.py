@@ -4,7 +4,7 @@ from crit.exceptions import MoreHostsWithSameUrlException, HostNotFoundException
 
 def get_host_by_name(url: str) -> Host:
     """
-    Gets the hosts by name from the config
+    Gets the hosts by url or name from the general config
 
     Args:
         url (str): The url that matches with the host
@@ -16,7 +16,7 @@ def get_host_by_name(url: str) -> Host:
     if url == 'localhost' or url == '127.0.0.1':
         return Localhost()
 
-    host = [host for host in config.general_config.hosts if host.url == url]
+    host = [host for host in config.general_config.hosts if host.url == url or host.name == url]
 
     if len(host) >= 2:
         raise MoreHostsWithSameUrlException
