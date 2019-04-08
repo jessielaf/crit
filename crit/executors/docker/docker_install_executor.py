@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from typing import List
-from crit.executors.result import Status
 from crit.exceptions import SingleExecutorFailedException
 from crit.executors import Result, MultiExecutor
 from crit.executors.utils import CommandExecutor, AptExecutor
@@ -46,50 +45,48 @@ class DockerInstallExecutor(MultiExecutor):
         )
 
         try:
-            results = []
-
-            results.append(update_executor.execute(True))
-            results.append(CommandExecutor(
+            self.execute_executor(update_executor)
+            self.execute_executor(CommandExecutor(
                 name='Upgrade apt-get',
                 command='apt-get -y upgrade',
                 env={
                     'DEBIAN_FRONTEND': 'noninteractive'
                 },
                 **self.get_base_attributes(excluded=['env'])
-            ).execute(True))
+            ))
 
             for package in self.packages_required:
-                results.append(AptExecutor(
+                self.execute_executor(AptExecutor(
                     package=package,
                     name='install ' + package,
                     **self.get_base_attributes()
-                ).execute(True))
+                ))
 
-            results.append(CommandExecutor(
+            self.execute_executor(CommandExecutor(
                 name='Add docker apt-key',
                 command='curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -',
                 **self.get_base_attributes()
-            ).execute(True))
+            ))
 
-            results.append(CommandExecutor(
+            self.execute_executor(CommandExecutor(
                 name='Add docker repository',
                 command='add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"',
                 **self.get_base_attributes()
-            ).execute(True))
+            ))
 
-            results.append(update_executor.execute(True))
+            self.execute_executor(update_executor)
 
-            results.append(CommandExecutor(
+            self.execute_executor(CommandExecutor(
                 name='Add apt-cache policy for docker-ce',
                 command='apt-cache policy docker-ce',
                 **self.get_base_attributes()
-            ).execute(True))
+            ))
 
-            results.append(DockerAptExecutor(
+            self.execute_executor(DockerAptExecutor(
                 name='Install docker-ce',
                 **self.get_base_attributes()
-            ).execute(True))
+            ))
 
-            return self.result_from_executor(results, 'Docker is installed!')
+            return self.result_from_executor('Docker is installed!')
         except SingleExecutorFailedException as e:
-            return Result(Status.FAIL, message=e.msg)
+            return e.result

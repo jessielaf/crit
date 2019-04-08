@@ -3,6 +3,7 @@ import unittest
 from unittest import mock
 from crit.config import Localhost
 from crit.executors.docker import DockerInstallExecutor
+from crit.executors.result import Status
 
 
 class ExecuteTest(unittest.TestCase):
@@ -15,9 +16,8 @@ class ExecuteTest(unittest.TestCase):
         apt_executor.return_value.execute = mock.Mock()
 
         executor = DockerInstallExecutor(host=Localhost())
+        executor.execute_executor = mock.Mock()
         executor.execute()
-
-        execute = mock.call().execute(True)
 
         command_executor.assert_has_calls([
             mock.call(
@@ -25,7 +25,6 @@ class ExecuteTest(unittest.TestCase):
                 name='Update apt-get',
                 **executor.get_base_attributes()
             ),
-            execute,
             mock.call(
                 name='Upgrade apt-get',
                 command='apt-get -y upgrade',
@@ -34,27 +33,21 @@ class ExecuteTest(unittest.TestCase):
                 },
                 **executor.get_base_attributes(excluded=['env'])
             ),
-            execute,
             mock.call(
                 name='Add docker apt-key',
                 command='curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -',
                 **executor.get_base_attributes()
             ),
-            execute,
             mock.call(
                 name='Add docker repository',
                 command='add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"',
                 **executor.get_base_attributes()
             ),
-            execute,
-            # Second execute on update
-            execute,
             mock.call(
                 name='Add apt-cache policy for docker-ce',
                 command='apt-cache policy docker-ce',
                 **executor.get_base_attributes()
-            ),
-            execute
+            )
         ])
 
         docker_apt_executor.assert_called_with(
@@ -70,8 +63,7 @@ class ExecuteTest(unittest.TestCase):
                     package=package,
                     name='install ' + package,
                     **executor.get_base_attributes()
-                ),
-                execute
+                )
             ]
 
         apt_executor.assert_has_calls(apt_calls)

@@ -1,12 +1,13 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
+from threading import Thread
 from typing import List, Dict
 from crit.config import Host, config, Localhost
 from .result import Status, Result
 
 
 @dataclass
-class BaseExecutor(metaclass=ABCMeta):
+class BaseExecutor(Thread, metaclass=ABCMeta):
     """
     Base executor where all other executors are based on
 
@@ -19,6 +20,10 @@ class BaseExecutor(metaclass=ABCMeta):
         env (Dict[str, str]): Add the env variables to the command. :obj:`optional`
         chdir (str): Directory in which executor will go before executing its command. :obj:`optional`
         host (Host): DO NOT USE THIS. This is used for the multi executor but should be used with the get_base_attributes function. The host on which the executor is running. :obj:`Not Usable`
+
+
+    Attributes:
+        result (Result): The result of the execution
     """
 
     name: str = ''
@@ -31,6 +36,7 @@ class BaseExecutor(metaclass=ABCMeta):
 
     # Attributes
     host: Host = None
+    result = None
 
     @abstractmethod
     def execute(self, **kwargs) -> 'Result':
@@ -46,30 +52,29 @@ class BaseExecutor(metaclass=ABCMeta):
 
         pass
 
-    def run(self, host: Host) -> 'Result':
+    def run(self):
         """
-        The function run by the sequence do NOT override this
-
-        Args:
-            host (Host): Host on which the executor is ran
-
-        Returns:
-            Result of the execution or the result of the has_tags function
+        The function ran when start is called. This is behaviour of thread
         """
 
         if not self.has_tags():
             return Result(Status.SKIPPING, message='Skipping based on tags')
 
-        self.host = host
-
         not_in_config = self.not_in_config_hosts()
         if not_in_config:
             return not_in_config
 
-        result = self.execute()
-        self.register_result(result)
+        self.result = self.execute()
 
-        return result
+        self.register_result()
+
+    def join(self, *args):
+        """
+        Overwrite the thread join to return the result of the executor
+        """
+
+        Thread.join(self, *args)
+        return self.result
 
     def not_in_config_hosts(self):
         """
@@ -84,7 +89,7 @@ class BaseExecutor(metaclass=ABCMeta):
 
         return None
 
-    def register_result(self, result: 'Result'):
+    def register_result(self):
         """
         Registers the result to the registry based on the host
 
@@ -97,7 +102,7 @@ class BaseExecutor(metaclass=ABCMeta):
         if host_name not in config.registry:
             config.registry[host_name] = {}
 
-        config.registry[host_name][self.register] = result
+        config.registry[host_name][self.register] = self.result
 
     def has_tags(self) -> bool:
         """

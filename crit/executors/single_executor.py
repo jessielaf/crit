@@ -48,10 +48,8 @@ class SingleExecutor(BaseExecutor, metaclass=ABCMeta):
         """
 
         result = self.run_command()
-        self.register_result(result)
 
         if result.status == Status.FAIL and exception_on_error:
-            result.to_table(self.host)
             raise SingleExecutorFailedException(self, result)
 
         return result

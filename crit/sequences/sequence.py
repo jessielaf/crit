@@ -1,4 +1,5 @@
 import shutil
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Union, List
 from crit.exceptions import NotBaseExecutorTypeException
@@ -43,17 +44,25 @@ class Sequence:
         Args:
             executors (List[SingleExecutor]): The executors to run
         """
+        running_executors = []
 
         for executor in executors:
             self.print_title(executor)
 
             hosts = executor.hosts or self.hosts
             for host in hosts:
+                executor = deepcopy(executor)
                 if isinstance(executor, BaseExecutor):
-                    result = executor.run(host)
-                    result.to_table(host)
+                    executor.host = host
+                    executor.start()
+                    running_executors.append(executor)
                 else:
                     raise NotBaseExecutorTypeException()
+
+            for running_executor in running_executors:
+                running_executor.join().to_table(running_executor.host)
+
+            running_executors = []
 
     def print_title(self, executor):
         """

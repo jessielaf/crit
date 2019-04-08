@@ -32,25 +32,28 @@ class GetBaseAttributesTests(unittest.TestCase):
 
 class ResultFromExecutorTests(unittest.TestCase):
     def test_one_changed(self):
-        results = [
+        executor = get_executor()
+        executor.results = [
             Result(Status.CHANGED, message='test1'),
             Result(Status.SUCCESS, message='test2')
         ]
 
-        self.assertEqual(get_executor().result_from_executor(results, 'test'), Result(Status.CHANGED, message='test'))
+        self.assertEqual(executor.result_from_executor( 'test'), Result(Status.CHANGED, message='test'))
 
     def test_all_success(self):
-        results = [
+        executor = get_executor()
+        executor.results = [
             Result(Status.SUCCESS, message='test1'),
             Result(Status.SUCCESS, message='test2')
         ]
 
-        self.assertEqual(get_executor().result_from_executor(results, 'test'), Result(Status.SUCCESS, message='test'))
+        self.assertEqual(executor.result_from_executor('test'), Result(Status.SUCCESS, message='test'))
 
     def test_all_changed(self):
-        results = [
+        executor = get_executor()
+        executor.results = [
             Result(Status.CHANGED, message='test1'),
             Result(Status.CHANGED, message='test2')
         ]
 
-        self.assertEqual(get_executor().result_from_executor(results, 'test'), Result(Status.CHANGED, message='test'))
+        self.assertEqual(executor.result_from_executor('test'), Result(Status.CHANGED, message='test'))

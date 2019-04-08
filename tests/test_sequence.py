@@ -2,14 +2,10 @@ import unittest
 from unittest.mock import Mock, patch
 
 from crit.config import Localhost, config
-from crit.executors import SingleExecutor, Result
+from crit.executors import Result
 from crit.executors.result import Status
+from crit.executors.utils import CommandExecutor
 from crit.sequences import Sequence
-
-
-@patch.multiple(SingleExecutor, __abstractmethods__=set())
-def get_executor(*args, **kwargs):
-    return SingleExecutor(*args, **kwargs)
 
 
 class RunTest(unittest.TestCase):
@@ -26,14 +22,15 @@ class RunTest(unittest.TestCase):
         execute = Mock()
         execute.return_value = result
 
-        # Mock the post execute function
-        post_executors = Mock()
-        post_executors.return_value = []
-
         # Mock the executor
-        executor = get_executor()
+        executor = CommandExecutor('ls')
         executor.execute = execute
-        executor.post_executors = post_executors
+
+        # Mock thread behaviour
+        join = Mock()
+        start = Mock()
+        executor.start = start
+        executor.join = join
 
         sequence = Sequence(
             hosts=[host],
@@ -46,5 +43,6 @@ class RunTest(unittest.TestCase):
 
         sequence.run()
 
-        execute.called_with(host)
-        post_executors.called_with(result)
+        execute.called_with()
+        join.called_with()
+        start.called_with()

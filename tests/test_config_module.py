@@ -16,6 +16,7 @@ class GetRegisteredTest(unittest.TestCase):
 
         executor = get_executor(register='test')
         executor.host = Localhost()
-        executor.register_result(result)
+        executor.result = result
+        executor.register_result()
 
         self.assertEqual(config.get_registered(Localhost(), 'test'), result)

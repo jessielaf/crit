@@ -192,7 +192,3 @@ class FillPasswordTest(unittest.TestCase):
         executor.host = host
 
         self.assertEqual(executor.fill_password(channel, channel), Result(Status.FAIL, message='Incorrect linux password!'))
-
-
-if __name__ == '__main__':
-    unittest.main()

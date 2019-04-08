@@ -9,9 +9,18 @@ from crit.executors import BaseExecutor, Result
 class MultiExecutor(BaseExecutor, ABC):
     """
     Executor interface for an executor that runs multiple executors itself as one executor
+
+    Attributes:
+        results (List[BaseExecutor]): Results from the executor
     """
 
-    def result_from_executor(self, results: List[Result], message: str):
+    results = []
+
+    def execute_executor(self, executor: BaseExecutor):
+        executor.execute(exception_on_error=True)
+        self.results.append(executor.result)
+
+    def result_from_executor(self, message: str):
         """
         Gets the result for the executors
 
@@ -23,7 +32,7 @@ class MultiExecutor(BaseExecutor, ABC):
             Returns a result that is :obj:`Status.CHANGED` or :obj:`Status.SUCCESS`
         """
 
-        is_changed = [result for result in results if result.status == Status.CHANGED]
+        is_changed = [result for result in self.results if result.status == Status.CHANGED]
 
         return Result(Status.CHANGED if is_changed else Status.SUCCESS, message=message)
 

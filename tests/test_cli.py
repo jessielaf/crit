@@ -217,7 +217,3 @@ class TestLinuxPassword(unittest.TestCase):
         cli.ask_linux_password(True)
 
         self.assertEqual('test', config.linux_password)
-
-
-if __name__ == '__main__':
-    unittest.main()

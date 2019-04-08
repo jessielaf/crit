@@ -106,7 +106,7 @@ Crit comes with some default executors
 | `FileExecutor` | Creates a file or directory based on the status | [link](https://crit.readthedocs.io/en/latest/crit.executors.utils.file_executor.html)        |
 | `Templa``teExecutor` | Creates a file on the host based on a template               | [link](https://crit.readthedocs.io/en/latest/crit.executors.utils.template_executor.html)        |
 | **Docker Executors** | | |
-| `DockerInstallExecutor` | Build a docker container | [link](https://crit.readthedocs.io/en/latest/crit.executors.premade.docker_build_executor.html) |
+| `DockerInstallExecutor` | Installs docker as a service | [link](https://crit.readthedocs.io/en/latest/crit.executors.premade.docker_install_executor.html) |
 | `DockerBuildExecutor` | Build a docker container | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker.docker_build_executor.html) |
 | `DockerRunExecutor` | Run a docker container | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker.docker_run_executor.html) |
 | `DockerPullExecutor` | Pulls a docker image | [link](https://crit.readthedocs.io/en/latest/crit.executors.docker.docker_pull_executor.html) |
@@ -160,7 +160,7 @@ Planning
 
 ## Tests
 
-Right now we test the cli and the base executor because that is where most of the logic is a.t.m. You can run the tests by running `python3 -m unittest discover`
+Right now we test the cli and the base executor because that is where most of the logic is a.t.m. You can run the tests by running `coverage run -m unittest discover`
 
 ### Docs
 

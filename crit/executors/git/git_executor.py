@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from crit.executors.result import Status
 from crit.exceptions import SingleExecutorFailedException
 from . import GitCloneExecutor, GitCheckoutExecutor, GitPullExecutor
-from crit.config import Host
 from crit.executors import MultiExecutor, Result
 
 
@@ -32,28 +31,26 @@ class GitExecutor(MultiExecutor):
         """
 
         try:
-            results = []
-
-            results.append(GitCloneExecutor(
+            self.execute_executor(GitCloneExecutor(
                 repository=self.repository,
                 name=f'Cloning {self.repository}',
                 **self.get_base_attributes()
-            ).execute(True))
+            ))
 
-            results.append(GitCheckoutExecutor(
+            self.execute_executor(GitCheckoutExecutor(
                 version=self.version,
                 force=self.force,
                 name=f'Checking out {self.version} for {self.repository}',
                 **self.get_base_attributes()
-            ).execute(True))
+            ))
 
-            results.append(GitPullExecutor(
+            self.execute_executor(GitPullExecutor(
                 force=self.force,
                 name=f'Pulling {self.repository}',
                 **self.get_base_attributes()
-            ).execute(True))
+            ))
 
-            return self.result_from_executor(results, 'Updated github repository')
-        except SingleExecutorFailedException:
-            return Result(Status.FAIL, message='An executor failed')
+            return self.result_from_executor('Updated github repository')
+        except SingleExecutorFailedException as e:
+            return e.result
 

@@ -13,13 +13,16 @@ def get_executor(*args, **kwargs):
 class RunTests(unittest.TestCase):
     def test_wrong_tags(self):
         config.tags = ['tag']
-        self.assertEqual(get_executor().run(host=Localhost()), Result(Status.SKIPPING, message='Skipping based on tags'))
+        executor = get_executor()
+        executor.host = Localhost()
+        self.assertEqual(executor.run(), Result(Status.SKIPPING, message='Skipping based on tags'))
 
     def test_run(self):
         config.tags = []
-        executor = get_executor()
-
         host = Localhost()
+
+        executor = get_executor()
+        executor.host = host
 
         has_tags = Mock()
         executor.has_tags = has_tags
@@ -34,21 +37,22 @@ class RunTests(unittest.TestCase):
         register_result = Mock()
         executor.register_result = register_result
 
-        result_returned = executor.run(host=host)
+        executor.run()
 
         self.assertTrue(has_tags.called)
         self.assertTrue(not_in_config_hosts.called)
         self.assertTrue(execute.called)
 
-        register_result.assert_called_with(result)
-        self.assertEqual(result, result_returned)
+        register_result.assert_called_with()
+        self.assertEqual(result, executor.result)
 
     def test_not_in_config(self):
         config.hosts = []
-        executor = get_executor()
         host = Host(url='test.com', ssh_user='test')
+        executor = get_executor()
+        executor.host = host
 
-        self.assertEqual(executor.run(host), Result(Status.SKIPPING, message='Host is not in global config or passed as argument') )
+        self.assertEqual(executor.run(), Result(Status.SKIPPING, message='Host is not in global config or passed as argument') )
 
     @classmethod
     def tearDownClass(cls):
@@ -62,8 +66,9 @@ class RegisterResultTest(unittest.TestCase):
         host = Localhost()
 
         executor.host = host
+        executor.result = result
 
-        executor.register_result(result)
+        executor.register_result()
 
         self.assertEqual(config.registry[repr(host)]['test'], result)
 
