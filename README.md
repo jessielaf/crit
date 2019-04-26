@@ -81,7 +81,8 @@ The **first parameter** is the path to the **sequence script** but crit also has
 
 #### Verbosity
 - **1**: Prints the command ran
-- **2**: Prints the output
+- **2**: Prints the output & the results of multi executors
+- **3**: Shows what is skipped
 
 ## Executors
 
@@ -160,7 +161,34 @@ Planning
 
 ## Tests
 
-Right now we test the cli and the base executor because that is where most of the logic is a.t.m. You can run the tests by running `coverage run -m unittest discover`
+We have unit tests and integration tests
+
+### Unit tests
+
+You run them with this command `coverage run -m unittest discover`
+
+### Integration tests
+
+You can run all tests by running `cd /vagrant && sudo python3 setup.py install && cd /vagrant/tests/integration && sh test.sh`
+
+
+For more info on what is happening see below:
+
+First install crit latest:
+```
+cd /vagrant && sudo python setup.py install
+```
+
+Everything of integration tests is in `/tests/integration/` thus:
+```
+cd /vagrant/tests/integration
+```
+
+1. Install local packages: `crit sequences/local_setup.py`
+2. Setup service server: `crit sequences/service_server.py`
+3. Setup normal server: `crit sequences/server_setup.py -h 192.168.200.102`
+4. Deploy project: `crit sequences/deploy_project.py -h 192.168.200.102`
+
 
 ### Docs
 

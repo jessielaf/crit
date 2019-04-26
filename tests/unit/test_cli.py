@@ -7,7 +7,7 @@ from crit.commands import cli
 from crit.config import Localhost, config
 from crit.exceptions import NoSequenceException, HostNotFoundException, WrongExtraVarsFormatException, \
     ConfigNotInFileException
-from tests.helpers.config import config as general_config
+from tests.unit.helpers.config import config as general_config
 
 
 work_dir = os.path.dirname(os.path.abspath(__file__))

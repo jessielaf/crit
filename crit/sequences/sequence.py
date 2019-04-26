@@ -5,7 +5,9 @@ from typing import Union, List
 from crit.exceptions import NotBaseExecutorTypeException
 from termcolor import colored
 from crit.config import config, Host
-from crit.executors import BaseExecutor
+from crit.executors import BaseExecutor, Result
+from crit.executors.result import Status
+from crit.sequences.thread_executor import ThreadExecutor
 
 
 @dataclass
@@ -32,21 +34,26 @@ class Sequence:
         """
         self.hosts = self.hosts or config.hosts
 
-        self.run_executors(self.executors)
+        self.run_executors()
 
         for name, channel in config.channels.items():
             channel.close()
 
-    def run_executors(self, executors: List[BaseExecutor]):
+    def run_executors(self):
         """
         Runs all the executors in an array on every host
-
-        Args:
-            executors (List[SingleExecutor]): The executors to run
         """
-        running_executors = []
+        running_threads = []
 
-        for executor in executors:
+        for executor in self.executors:
+            if not self.has_tags(executor):
+                if config.verbose <= 3:
+                    self.print_title(executor)
+
+                    Result(Status.SKIPPING, message='Skipping based on tags').to_table()
+
+                continue
+
             self.print_title(executor)
 
             hosts = executor.hosts or self.hosts
@@ -54,15 +61,47 @@ class Sequence:
                 executor = deepcopy(executor)
                 if isinstance(executor, BaseExecutor):
                     executor.host = host
-                    executor.start()
-                    running_executors.append(executor)
+
+                    thread = ThreadExecutor(executor)
+                    thread.start()
+
+                    running_threads.append(thread)
                 else:
                     raise NotBaseExecutorTypeException()
 
-            for running_executor in running_executors:
-                running_executor.join().to_table(running_executor.host)
+            for running_executor in running_threads:
+                result = running_executor.join()
 
-            running_executors = []
+                if result:
+                    result.to_table(running_executor.executor.host)
+
+            running_threads = []
+
+    def has_tags(self, executor: BaseExecutor) -> bool:
+        """
+        Check if the executor can run based on the tags.
+        It prefers tags over skiptags
+
+        Returns:
+            If the executor can run or not
+        """
+
+        if config.tags:
+            if not executor.tags:
+                return False
+
+            in_tags = [tag for tag in executor.tags if tag in config.tags]
+
+            return len(in_tags) > 0
+        elif config.skip_tags:
+            if not executor.tags:
+                return True
+
+            in_skip_tags = [tag for tag in executor.tags if tag in config.skip_tags]
+
+            return len(in_skip_tags) == 0
+
+        return True
 
     def print_title(self, executor):
         """

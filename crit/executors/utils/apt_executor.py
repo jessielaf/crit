@@ -26,6 +26,7 @@ class AptExecutor(SingleExecutor):
     package: str = None
     sudo: bool = True
     action: str = 'install'
+    error_lines = SingleExecutor.error_lines + ['E: Unable to locate package None', 'E: dpkg was interrupted']
 
     action_to_call = {
         'install': _Action('install', 'The following NEW packages will be installed:'),
