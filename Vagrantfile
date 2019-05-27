@@ -34,9 +34,7 @@ Vagrant.configure("2") do |config|
         sudo apt-get upgrade
         sudo apt-get install -y python3-setuptools python3-pip python3-sphinx
         pip3 install -r /vagrant/requirements-build.txt
-        cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-        echo "alias example=\"cd /vagrant && sudo python3 setup.py install && cd example/ && echo Results: && crit test.py -c config.py && cd /vagrant/\"" >> ~/.bashrc
-        source ~/.bashrc
+        cat /home/vagrant/.ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
       SHELL
     end
 
