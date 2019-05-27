@@ -6,7 +6,6 @@ from crit.config import Localhost, config, Host
 from crit.exceptions import SingleExecutorFailedException
 from crit.executors import SingleExecutor, Result
 from crit.executors.result import Status
-from example.config import config as general_config
 
 
 @patch.multiple(SingleExecutor, __abstractmethods__=set())

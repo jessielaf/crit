@@ -1,6 +1,9 @@
 from abc import ABC
 from dataclasses import dataclass
 from typing import List
+
+from crit.config import config
+
 from crit.executors.result import Status
 from crit.executors import BaseExecutor, Result
 
@@ -17,22 +20,40 @@ class MultiExecutor(BaseExecutor, ABC):
     results = []
 
     def execute_executor(self, executor: BaseExecutor):
-        executor.execute(exception_on_error=True)
-        self.results.append(executor.result)
+        """
+        Executes a executor with exception_on_error and adds the result to self.results
+
+        Args:
+            executor (BaseExecutor): Executor that will be executed
+
+        Returns:
+            The result
+        """
+
+        result = executor.execute(exception_on_error=True)
+        self.results.append(result)
+
+        if config.verbose >= 2:
+            result.to_table(self.host, executor.name)
+
+        return result
 
     def result_from_executor(self, message: str):
         """
         Gets the result for the executors
 
         Args:
-            results (List[Result]): The results of the multiple executors run
             message (str): Success message that will be shown in the terminal
 
         Returns:
             Returns a result that is :obj:`Status.CHANGED` or :obj:`Status.SUCCESS`
         """
 
-        is_changed = [result for result in self.results if result.status == Status.CHANGED]
+        is_changed = False
+
+        for result in self.results:
+            if result.status == Status.CHANGED and not is_changed:
+                is_changed = True
 
         return Result(Status.CHANGED if is_changed else Status.SUCCESS, message=message)
 

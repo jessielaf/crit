@@ -1,13 +1,12 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from threading import Thread
 from typing import List, Dict
 from crit.config import Host, config, Localhost
 from .result import Status, Result
 
 
 @dataclass
-class BaseExecutor(Thread, metaclass=ABCMeta):
+class BaseExecutor(metaclass=ABCMeta):
     """
     Base executor where all other executors are based on
 
@@ -57,9 +56,6 @@ class BaseExecutor(Thread, metaclass=ABCMeta):
         The function ran when start is called. This is behaviour of thread
         """
 
-        if not self.has_tags():
-            return Result(Status.SKIPPING, message='Skipping based on tags')
-
         not_in_config = self.not_in_config_hosts()
         if not_in_config:
             return not_in_config
@@ -67,14 +63,6 @@ class BaseExecutor(Thread, metaclass=ABCMeta):
         self.result = self.execute()
 
         self.register_result()
-
-    def join(self, *args):
-        """
-        Overwrite the thread join to return the result of the executor
-        """
-
-        Thread.join(self, *args)
-        return self.result
 
     def not_in_config_hosts(self):
         """
@@ -103,29 +91,3 @@ class BaseExecutor(Thread, metaclass=ABCMeta):
             config.registry[host_name] = {}
 
         config.registry[host_name][self.register] = self.result
-
-    def has_tags(self) -> bool:
-        """
-        Check if the executor can run based on the tags.
-        It prefers tags over skiptags
-
-        Returns:
-            If the executor can run or not
-        """
-
-        if config.tags:
-            if not self.tags:
-                return False
-
-            in_tags = [tag for tag in self.tags if tag in config.tags]
-
-            return len(in_tags) > 0
-        elif config.skip_tags:
-            if not self.tags:
-                return True
-
-            in_skip_tags = [tag for tag in self.tags if tag in config.skip_tags]
-
-            return len(in_skip_tags) == 0
-
-        return True

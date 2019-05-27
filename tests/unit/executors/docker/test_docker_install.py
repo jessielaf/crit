@@ -3,7 +3,6 @@ import unittest
 from unittest import mock
 from crit.config import Localhost
 from crit.executors.docker import DockerInstallExecutor
-from crit.executors.result import Status
 
 
 class ExecuteTest(unittest.TestCase):
@@ -11,10 +10,6 @@ class ExecuteTest(unittest.TestCase):
     @mock.patch('crit.executors.docker.docker_install_executor.DockerAptExecutor')
     @mock.patch('crit.executors.docker.docker_install_executor.CommandExecutor')
     def test_command(self, command_executor, docker_apt_executor, apt_executor):
-        command_executor.return_value.execute = mock.Mock()
-        docker_apt_executor.return_value.execute = mock.Mock()
-        apt_executor.return_value.execute = mock.Mock()
-
         executor = DockerInstallExecutor(host=Localhost())
         executor.execute_executor = mock.Mock()
         executor.execute()

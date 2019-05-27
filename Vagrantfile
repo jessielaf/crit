@@ -2,6 +2,13 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1", auto_correct: true
   config.vm.synced_folder ".", "/vagrant", type: "virtualbox"
 
+  config.vm.provision "shell" do |s|
+    ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
+    s.inline = <<-SHELL
+      echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+    SHELL
+  end
+
   (1..2).each do |i|
     config.vm.define "slave#{i}" do |slave|
       slave.vm.box = "debian/stretch64"
@@ -9,13 +16,6 @@ Vagrant.configure("2") do |config|
 
       slave.vm.provider "virtualbox" do |v|
         v.memory = 256
-      end
-
-      slave.vm.provision "shell" do |s|
-        ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
-        s.inline = <<-SHELL
-          echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
-        SHELL
       end
     end
   end
@@ -34,9 +34,8 @@ Vagrant.configure("2") do |config|
         sudo apt-get upgrade
         sudo apt-get install -y python3-setuptools python3-pip python3-sphinx
         pip3 install -r /vagrant/requirements-build.txt
-        cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-        echo "alias example=\"cd /vagrant && sudo python3 setup.py install && cd example/ && echo Results: && crit test.py -c config.py && cd /vagrant/\"" >> ~/.bashrc
-        source ~/.bashrc
+        pip3 install -r /vagrant/requirements.txt
+        cat /home/vagrant/.ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
       SHELL
     end
 

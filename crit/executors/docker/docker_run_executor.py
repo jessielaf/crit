@@ -9,11 +9,11 @@ class DockerRunExecutor(SingleExecutor):
     Args:
         image (str): The image which should be pulled and the command that should be ran on the command. :obj:`required`
         tag (str): The name that will be given to the image. :obj:`optional`
-        volumes (Dict[str, str]): Volumes which should be mounted. Key is the host-src and the value is the container-src. :obj:`optional`
         ports (Dict[str, str]): Ports which should be exposed. Key is the host-post and the value is the container-post. :obj:`optional`
+        volumes (Dict[str, str]): Volumes which should be mounted. Key is the host-src and the value is the container-src. :obj:`optional`
+        environment (Dict[str, str]): Env variables for the docker run command. :obj:`optional`
         detached (bool): Run in detached mode. Defaults to :obj:`True`
         tty (bool): Run in tty mode. Defaults to :obj:`False`
-        environment (Dict[str, str]): Env variables for the docker run command. :obj:`optional`
         extra_commands (str): Command added behind the normal command. :obj:`optional`
 
     Attributes:

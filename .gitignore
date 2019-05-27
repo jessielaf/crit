@@ -13,3 +13,5 @@ __pycache__/
 /docs/_build
 /htmlcov
 .coverage
+.vagrant
+venv
