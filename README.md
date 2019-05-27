@@ -184,10 +184,10 @@ Everything of integration tests is in `/tests/integration/` thus:
 cd /vagrant/tests/integration
 ```
 
-1. Install local packages: `crit sequences/local_setup.py`
-2. Setup service server: `crit sequences/service_server.py`
-3. Setup normal server: `crit sequences/server_setup.py -h 192.168.200.102`
-4. Deploy project: `crit sequences/deploy_project.py -h 192.168.200.102`
+1. Install local packages: `crit sequences/local_setup.py -vvv`
+2. Setup service server: `crit sequences/service_server.py -vvv`
+3. Setup normal server: `crit sequences/server_setup.py -h 192.168.200.102 -vvv`
+4. Deploy project: `crit sequences/deploy_project.py -h 192.168.200.102 -vvv`
 
 
 ### Docs
