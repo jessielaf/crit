@@ -34,6 +34,7 @@ Vagrant.configure("2") do |config|
         sudo apt-get upgrade
         sudo apt-get install -y python3-setuptools python3-pip python3-sphinx
         pip3 install -r /vagrant/requirements-build.txt
+        pip3 install -r /vagrant/requirements.txt
         cat /home/vagrant/.ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys
       SHELL
     end

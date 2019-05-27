@@ -50,13 +50,12 @@ class MultiExecutor(BaseExecutor, ABC):
         """
 
         is_changed = False
-        output = []
 
         for result in self.results:
             if result.status == Status.CHANGED and not is_changed:
                 is_changed = True
 
-        return Result(Status.CHANGED if is_changed else Status.SUCCESS, stdout=output, message=message)
+        return Result(Status.CHANGED if is_changed else Status.SUCCESS, message=message)
 
     def get_base_attributes(self, excluded=None) -> dict:
         """

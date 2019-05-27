@@ -66,7 +66,7 @@ class UserExecutor(MultiExecutor):
 
                 # Add right permissions to the home folder of the user
                 self.execute_executor(CommandExecutor(
-                    command=f'chown -R {self.username} /home/{self.username}/',
+                    command=f'chown -R {self.username}:{self.username} /home/{self.username}/',
                     **self.get_base_attributes()
                 ))
 
