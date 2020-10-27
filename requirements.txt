@@ -4,4 +4,4 @@ dataclasses
 jinja2
 termcolor
 hvac
-cryptography==2.4.2
+cryptography==3.2
